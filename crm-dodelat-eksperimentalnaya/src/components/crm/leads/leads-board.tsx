@@ -124,7 +124,17 @@ export function LeadsBoard({ leads, clients }: Props) {
     if (!over) return
 
     const leadId = active.id as string
-    const targetColumn = over.id as string
+    const overId = over.id as string
+    const stageKeys = STAGES.map(s => s.key)
+
+    let targetColumn: string
+    if (stageKeys.includes(overId)) {
+      targetColumn = overId
+    } else {
+      const overLead = filteredLeads.find(l => l.id === overId)
+      if (!overLead) return
+      targetColumn = overLead.stage
+    }
 
     const lead = filteredLeads.find((l) => l.id === leadId)
     if (!lead || lead.stage === targetColumn) return

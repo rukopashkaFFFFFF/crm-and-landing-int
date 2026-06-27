@@ -47,13 +47,18 @@ export default async function LeadsPage() {
     }),
   ])
 
+  const serializedLeads = leads.map(l => ({
+    ...l,
+    value: Number(l.value),
+  }))
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">{t("Leads Pipeline")}</h1>
       </div>
       <LeadsBoard
-        leads={JSON.parse(JSON.stringify(leads))}
+        leads={JSON.parse(JSON.stringify(serializedLeads))}
         clients={JSON.parse(JSON.stringify(clients))}
       />
     </div>
