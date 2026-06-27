@@ -145,7 +145,12 @@ async function main() {
   // DEVELOPER (support) — второй разработчик для поддержки
   const support = await upsertUser("support@agency.com", "Дмитрий Саппорт", "DEVELOPER")
 
-  console.log(`Создано ${6} пользователей`)
+  // SALES (Telegram bot users) — пользователи, получающие уведомления через Telegram
+  const tgManager1 = await upsertUser("manager@agency.com", "Менеджер Telegram", "SALES")
+  const tgManager2 = await upsertUser("sales@agency.com", "Отдел Продаж", "SALES")
+  const tgGhost = await upsertUser("ghost@agency.com", "GHOST (@GHOSTBUSTFUCKYOU)", "SALES")
+
+  console.log(`Создано ${9} пользователей`)
 
   // ===================================================================
   // ШАГ 3: КЛИЕНТЫ (Clients)

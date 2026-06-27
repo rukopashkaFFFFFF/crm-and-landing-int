@@ -7,7 +7,7 @@ import { evaluateAutomationRules } from "@/lib/automation-engine"
 const LandingLeadSchema = z.object({
   externalId: z.string(),
   formSource: z.enum([
-    "quiz", "calculator", "header_cta", "exit_intent", "tariff"
+    "quiz", "calculator", "header_cta", "exit_intent", "tariff", "callback", "footer"
   ]),
 
   contact: z.object({

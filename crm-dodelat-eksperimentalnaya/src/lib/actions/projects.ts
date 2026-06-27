@@ -50,7 +50,14 @@ export async function createProject(formData: FormData) {
   })
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors }
 
-  const project = await db.project.create({ data: parsed.data })
+  const dateFields = ["startDate", "endDate"] as const
+  const data = {
+    ...parsed.data,
+    startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : null,
+    endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : null,
+  }
+
+  const project = await db.project.create({ data })
 
   await logActivity({
     type: "PROJECT_CREATED", description: `Created project: ${project.name}`,
@@ -89,7 +96,13 @@ export async function updateProject(projectId: string, formData: FormData) {
   })
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors }
 
-  const project = await db.project.update({ where: { id: projectId }, data: parsed.data })
+  const data = {
+    ...parsed.data,
+    startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : null,
+    endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : null,
+  }
+
+  const project = await db.project.update({ where: { id: projectId }, data })
 
   if (parsed.data.status) {
     const pm = project.pmId ? await db.user.findUnique({ where: { id: project.pmId } }) : null

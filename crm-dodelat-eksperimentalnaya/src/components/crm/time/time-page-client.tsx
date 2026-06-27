@@ -192,7 +192,7 @@ export function TimePageClient({ entries, users, tasks, currentUserId, currentUs
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">{t("Time Tracking")}</h1>
         <Sheet>
-          <SheetTrigger><Button><Plus className="mr-2 h-4 w-4" />{t("Log Time")}</Button></SheetTrigger>
+          <SheetTrigger render={<Button />}><Plus className="mr-2 h-4 w-4" />{t("Log Time")}</SheetTrigger>
           <SheetContent>
             <SheetHeader><SheetTitle>{t("Log Time - sheet title")}</SheetTitle><SheetDescription>{t("Quick add a time entry")}</SheetDescription></SheetHeader>
             <div className="space-y-4 py-4">
