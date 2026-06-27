@@ -1,0 +1,1548 @@
+// =====================================================================
+// СХЕМА БАЗЫ ДАННЫХ CRM-СИСТЕМЫ
+// =====================================================================
+// Prisma Schema Language — декларативное описание структуры БД.
+// На основе этого файла Prisma генерирует:
+//   1) Prisma Client — типобезопасный ORM-клиент для Node.js
+//   2) SQL-миграции для PostgreSQL
+//
+// База данных: PostgreSQL
+// Генерация клиента: в директорию src/generated/prisma
+//
+// СВЯЗИ (Relations):
+//   User 1—* Account, Session, Client, Project, Task, TimeEntry, Comment, Attachment, Activity, Notification, InviteToken
+//   Client 1—* Lead, Project, Invoice, Estimate, Activity, ClientPortalToken
+//   Project 1—* Task, Invoice, Estimate, Comment, Attachment, Activity, Milestone, ClientPortalToken
+//   Task 1—* TimeEntry, Comment, Attachment, Activity; Task 1—* Task (self, подзадачи)
+//   Invoice 1—* Payment
+//   Comment 1—* Attachment
+// =====================================================================
+
+// =====================================================================
+// ГЕНЕРАТОР PRISMA CLIENT
+// =====================================================================
+generator client {
+  // Провайдер генерации:
+  // "prisma-client" — генерирует расширенный Prisma Client (Prisma v6+).
+  // Ранее использовался "prisma-client-js".
+  provider = "prisma-client"
+
+  // Путь для сгенерированного клиента.
+  // Относительно корня проекта. Импортируется в коде как "@/generated/prisma".
+  output   = "../src/generated/prisma"
+}
+
+// =====================================================================
+// ИСТОЧНИК ДАННЫХ (подключение к БД)
+// =====================================================================
+datasource db {
+  // Провайдер базы данных: PostgreSQL.
+  // Prisma поддерживает: postgresql, mysql, sqlite, sqlserver, mongodb, cockroachdb.
+  provider = "postgresql"
+}
+
+// =====================================================================
+// ПЕРЕЧИСЛЕНИЯ (ENUMS)
+// =====================================================================
+
+/**
+ * @enum Role
+ * @description Роли пользователей в системе. Определяют уровень доступа
+ *              и набор разрешённых действий в CRM.
+ */
+enum Role {
+  /// Владелец агентства. Полный доступ ко всем функциям системы.
+  /// Может управлять пользователями, проектами, финансами и настройками.
+  OWNER
+
+  /// Project Manager (менеджер проектов).
+  /// Управляет проектами, задачами, клиентами и ресурсами команды.
+  PM
+
+  /// Разработчик. Работает с задачами, time tracking, комментариями.
+  DEVELOPER
+
+  /// Дизайнер. Работает с задачами, загружает макеты и дизайн-файлы.
+  DESIGNER
+
+  /// Менеджер по продажам. Управляет лидами, сделками, клиентами.
+  SALES
+}
+
+/**
+ * @enum ClientStatus
+ * @description Статус клиента в CRM. Отражает текущую стадию взаимодействия
+ *              с клиентом — от первого контакта до потери.
+ */
+enum ClientStatus {
+  /// Лид — потенциальный клиент, первый контакт установлен.
+  LEAD
+
+  /// Активный клиент — ведутся проекты/работы.
+  ACTIVE
+
+  /// Неактивный — проекты завершены, текущих работ нет.
+  INACTIVE
+
+  /// Ушедший клиент — расторгли сотрудничество, перешли к конкурентам.
+  CHURNED
+}
+
+/**
+ * @enum ClientSource
+ * @description Источник, откуда клиент узнал об агентстве.
+ *              Используется для аналитики маркетинга и оценки каналов привлечения.
+ */
+enum ClientSource {
+  /// По рекомендации (сарафанное радио, referral).
+  REFERRAL
+
+  /// С сайта агентства (через форму заявки, чат).
+  WEBSITE
+
+  /// Холодный контакт (email-рассылка, cold call, LinkedIn).
+  COLD
+
+  /// Другой источник (конференция, соцсети, партнёрская программа).
+  OTHER
+}
+
+/**
+ * @enum LeadStage
+ * @description Этапы воронки продаж (sales pipeline).
+ *              Каждый лид последовательно проходит эти этапы от создания
+ *              до закрытия сделки (WIN) или потери (LOST).
+ */
+enum LeadStage {
+  /// Новый лид — только что создан, ещё не обработан.
+  NEW
+
+  /// С клиентом связались, провели первый разговор/встречу.
+  CONTACTED
+
+  /// Отправлено коммерческое предложение (proposal).
+  PROPOSAL_SENT
+
+  /// Идут переговоры по цене, срокам, объёму работ.
+  NEGOTIATION
+
+  /// Сделка заключена — клиент согласился на условия.
+  WON
+
+  /// Сделка проиграна — клиент отказался или ушёл к конкуренту.
+  LOST
+}
+
+/**
+ * @enum ProjectStatus
+ * @description Статус проекта. Отражает жизненный цикл проекта
+ *              от планирования до завершения или отмены.
+ */
+enum ProjectStatus {
+  /// Проект в стадии планирования — уточняются требования, сроки, ресурсы.
+  PLANNING
+
+  /// Проект в активной разработке.
+  IN_PROGRESS
+
+  /// Проект на ревью/приёмке — тестирование, QA, согласование с клиентом.
+  REVIEW
+
+  /// Проект успешно завершён, сдан клиенту.
+  COMPLETED
+
+  /// Проект приостановлен (по инициативе клиента или команды).
+  ON_HOLD
+
+  /// Проект отменён.
+  CANCELLED
+}
+
+/**
+ * @enum TaskStatus
+ * @description Статус задачи внутри проекта.
+ *              Отражает прогресс выполнения от постановки до завершения.
+ */
+enum TaskStatus {
+  /// Задача создана, но ещё не начата.
+  TODO
+
+  /// Задача в работе.
+  IN_PROGRESS
+
+  /// Задача на ревью — ожидает проверки код-ревью или QA.
+  IN_REVIEW
+
+  /// Задача выполнена.
+  DONE
+
+  /// Задача отменена (больше не актуальна).
+  CANCELLED
+}
+
+/**
+ * @enum TaskPriority
+ * @description Приоритет задачи. Определяет срочность выполнения
+ *              и порядок в очереди задач.
+ */
+enum TaskPriority {
+  /// Низкий приоритет — можно сделать в последнюю очередь.
+  LOW
+
+  /// Средний приоритет — стандартная задача.
+  MEDIUM
+
+  /// Высокий приоритет — нужно сделать в ближайшее время.
+  HIGH
+
+  /// Критический приоритет — требует немедленного выполнения, блокирует других.
+  URGENT
+}
+
+/**
+ * @enum InvoiceStatus
+ * @description Статус счёта (инвойса). Отражает жизненный цикл выставленного счёта
+ *              от черновика до оплаты или отмены.
+ */
+enum InvoiceStatus {
+  /// Черновик — счёт создаётся, редактируется, ещё не отправлен клиенту.
+  DRAFT
+
+  /// Счёт отправлен клиенту, ожидается оплата.
+  SENT
+
+  /// Счёт оплачен.
+  PAID
+
+  /// Просрочен — дата оплаты прошла, деньги не поступили.
+  OVERDUE
+
+  /// Счёт аннулирован (ошибка, замена, отмена сделки).
+  CANCELLED
+}
+
+/**
+ * @enum EstimateStatus
+ * @description Статус сметы (коммерческого предложения). Отражает жизненный цикл
+ *              сметы от создания до принятия или отклонения клиентом.
+ */
+enum EstimateStatus {
+  /// Черновик — смета создаётся, ещё не отправлена клиенту.
+  DRAFT
+
+  /// Смета отправлена клиенту, ожидается решение.
+  SENT
+
+  /// Клиент принял смету — можно выставлять счёт.
+  ACCEPTED
+
+  /// Клиент отклонил смету.
+  DECLINED
+}
+
+/**
+ * @enum NotificationType
+ * @description Тип уведомления в системе. Определяет визуальное оформление
+ *              (цвет, иконку) и срочность уведомления.
+ */
+enum NotificationType {
+  /// Информационное уведомление (нейтральное).
+  INFO
+
+  /// Предупреждение — требует внимания пользователя.
+  WARNING
+
+  /// Успешное уведомление (оплата прошла, задача выполнена).
+  SUCCESS
+
+  /// Ошибка — что-то пошло не так, требуется вмешательство.
+  ERROR
+}
+
+// =====================================================================
+// МОДЕЛИ (TABLES)
+// =====================================================================
+
+/**
+ * @model User
+ * @table users (маппинг из "User" в "users" через @@map)
+ * @description Пользователь CRM-системы. Может быть владельцем, PM, разработчиком,
+ *              дизайнером или продажником. Хранит учётные данные, роль, настройки
+ *              и все связи с другими сущностями (задачи, проекты, клиенты, time entries).
+ */
+model User {
+  // ===== БАЗОВЫЕ ПОЛЯ =====
+
+  /// Уникальный идентификатор пользователя (CUID — collision-resistant ID).
+  id            String   @id @default(cuid())
+
+  /// Имя и фамилия пользователя. Опционально — можно оставить пустым
+  /// при OAuth-регистрации, если провайдер не предоставил имя.
+  name          String?
+
+  /// Email пользователя. Уникален — один email = один аккаунт.
+  /// Используется для входа и уведомлений.
+  email         String   @unique
+
+  /// Дата и время подтверждения email.
+  /// null — email ещё не подтверждён.
+  emailVerified DateTime?
+
+  /// URL аватара пользователя. Загружается через UploadThing
+  /// и хранится на utfs.io.
+  image         String?
+
+  /// Хеш пароля (bcrypt или argon2). null для OAuth-пользователей
+  /// (GitHub, Google — у них нет пароля).
+  password      String?
+
+  /// Роль пользователя в системе. Определяет права доступа.
+  role          Role     @default(DEVELOPER)
+
+  /// URL аватара (альтернативное поле, дублирует image для обратной совместимости).
+  avatar        String?
+
+  /// Активен ли пользователь. false = заблокирован/уволен.
+  /// Неактивные пользователи не могут войти в систему.
+  active        Boolean  @default(true)
+
+  /// Почасовая ставка пользователя (в USD).
+  /// Используется для расчёта стоимости time entries и выставления счетов.
+  hourlyRate    Decimal  @default(0) @db.Decimal(10, 2)
+
+  /// Количество рабочих часов в неделю (capacity).
+  /// Используется для планирования загрузки ресурсов.
+  /// По умолчанию 40 часов (полная занятость).
+  capacityHours Decimal  @default(40) @db.Decimal(5, 2)
+
+  /// Дата создания записи.
+  createdAt     DateTime @default(now())
+
+  /// Дата последнего обновления. Обновляется автоматически Prisma.
+  updatedAt     DateTime @updatedAt
+
+  // ===== СВЯЗИ (Relations) =====
+
+  /// OAuth-аккаунты (GitHub, Google, и т.д.).
+  /// Связь 1—* с моделью Account.
+  accounts        Account[]
+
+  /// Сессии пользователя (для NextAuth/Session-based auth).
+  /// Связь 1—* с моделью Session.
+  sessions        Session[]
+
+  /// Клиенты, закреплённые за пользователем (ответственный менеджер).
+  /// Связь через отношение "ClientAssignee".
+  assignedClients Client[]      @relation("ClientAssignee")
+
+  /// Проекты, где пользователь является Project Manager.
+  /// Связь через отношение "ProjectManager".
+  managedProjects Project[]     @relation("ProjectManager")
+
+  /// Задачи, назначенные на пользователя.
+  /// Связь через отношение "TaskAssignee".
+  assignedTasks   Task[]        @relation("TaskAssignee")
+
+  /// Записи времени (time tracking), созданные пользователем.
+  /// Связь 1—* с моделью TimeEntry.
+  timeEntries     TimeEntry[]
+
+  /// Комментарии, написанные пользователем.
+  /// Связь 1—* с моделью Comment.
+  comments        Comment[]
+
+  /// Файлы, загруженные пользователем.
+  /// Связь через отношение "FileUploader" с моделью Attachment.
+  uploadedFiles   Attachment[]  @relation("FileUploader")
+
+  /// Лог действий пользователя (аудит-трейл).
+  /// Связь 1—* с моделью Activity.
+  activities      Activity[]
+
+  /// Уведомления пользователя.
+  /// Связь 1—* с моделью Notification.
+  notifications   Notification[]
+
+  /// Токены приглашений, отправленные пользователем.
+  /// Связь 1—* с моделью InviteToken.
+  inviteTokens    InviteToken[]
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по роли — для быстрой фильтрации пользователей по роли
+  /// (например, "показать всех PM").
+  @@index([role])
+
+  /// Индекс по email — для быстрого поиска пользователя при логине.
+  @@index([email])
+
+  /// Имя таблицы в БД: "users" (вместо "User").
+  @@map("users")
+}
+
+/**
+ * @model InviteToken
+ * @table invite_tokens
+ * @description Токен приглашения нового пользователя в систему.
+ *              Когда OWNER или PM приглашает нового сотрудника, создаётся
+ *              запись с токеном, который отправляется на email приглашённого.
+ *              Токен имеет срок действия и может быть использован только один раз.
+ */
+model InviteToken {
+  /// Уникальный идентификатор токена.
+  id        String   @id @default(cuid())
+
+  /// Email приглашаемого пользователя.
+  /// По этому email токен будет отправлен.
+  email     String
+
+  /// Уникальный токен (строка). Ссылка в письме содержит этот токен:
+  /// /invite/accept?token=xxx
+  token     String   @unique
+
+  /// Роль, которая будет назначена пользователю после принятия приглашения.
+  role      Role     @default(DEVELOPER)
+
+  /// ID пользователя, который отправил приглашение.
+  invitedById String
+
+  /// Дата истечения токена. После этой даты приглашение недействительно.
+  expiresAt DateTime
+
+  /// Дата использования токена. null = токен ещё не использован.
+  usedAt    DateTime?
+
+  /// Дата создания приглашения.
+  createdAt DateTime @default(now())
+
+  /// Связь: кто пригласил (User).
+  /// Внешний ключ: invitedById -> User.id
+  invitedBy User @relation(fields: [invitedById], references: [id])
+
+  /// Индекс по токену — для быстрого поиска при принятии приглашения.
+  @@index([token])
+  /// Индекс по email — для проверки, не приглашали ли этот email ранее.
+  @@index([email])
+  /// Индекс по дате истечения — для фоновой очистки просроченных токенов.
+  @@index([expiresAt])
+  @@map("invite_tokens")
+}
+
+/**
+ * @model Account
+ * @table accounts
+ * @description OAuth-аккаунты пользователя (NextAuth.js).
+ *              Хранит данные аутентификации от внешних провайдеров
+ *              (GitHub, Google, Discord и т.д.).
+ *              Один пользователь может иметь несколько OAuth-аккаунтов.
+ */
+model Account {
+  /// Уникальный идентификатор записи.
+  id                String  @id @default(cuid())
+
+  /// ID пользователя, которому принадлежит аккаунт.
+  userId            String
+
+  /// Тип аккаунта: "oauth", "email", "credentials".
+  type              String
+
+  /// Имя провайдера: "github", "google", "discord" и т.д.
+  provider          String
+
+  /// Уникальный ID аккаунта у провайдера (число от GitHub и т.д.).
+  providerAccountId String
+
+  /// Refresh-токен OAuth — для обновления access-токена.
+  refresh_token     String?
+
+  /// Access-токен OAuth — для доступа к API провайдера.
+  access_token      String?
+
+  /// Дата истечения access-токена (Unix timestamp).
+  expires_at        Int?
+
+  /// Тип токена: "bearer", "mac" и т.д.
+  token_type        String?
+
+  /// Scope (область видимости) OAuth-токена.
+  scope             String?
+
+  /// ID-токен OpenID Connect (если провайдер поддерживает OIDC).
+  id_token          String?
+
+  /// Session state для OAuth 2.0 (защита от CSRF).
+  session_state     String?
+
+  /// Связь: пользователь, владеющий этим OAuth-аккаунтом.
+  /// При удалении пользователя все его OAuth-аккаунты удаляются каскадно.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Составной уникальный ключ: один провайдер — один accountId.
+  /// Не может быть двух записей с одинаковым (provider, providerAccountId).
+  @@unique([provider, providerAccountId])
+
+  /// Индекс по userId — для быстрого поиска всех аккаунтов пользователя.
+  @@index([userId])
+  @@map("accounts")
+}
+
+/**
+ * @model Session
+ * @table sessions
+ * @description Сессия пользователя (NextAuth.js Session strategy).
+ *              Используется для поддержания аутентификации в течение сессии.
+ */
+model Session {
+  /// Уникальный ID сессии.
+  id           String   @id @default(cuid())
+
+  /// Уникальный токен сессии (хранится в cookie/session storage на клиенте).
+  sessionToken String   @unique
+
+  /// ID пользователя, которому принадлежит сессия.
+  userId       String
+
+  /// Дата истечения сессии. После этой даты пользователь должен войти снова.
+  expires      DateTime
+
+  /// Связь: пользователь сессии.
+  /// При удалении пользователя все его сессии удаляются каскадно.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Индекс по userId — для быстрого поиска всех сессий пользователя.
+  @@index([userId])
+  @@map("sessions")
+}
+
+/**
+ * @model VerificationToken
+ * @table verification_tokens
+ * @description Токен для подтверждения email (NextAuth.js).
+ *              Используется в flow "Sign in with magic link" или
+ *              при подтверждении смены email.
+ */
+model VerificationToken {
+  /// Идентификатор (обычно email пользователя).
+  identifier String
+
+  /// Уникальный токен подтверждения.
+  token      String   @unique
+
+  /// Дата истечения токена.
+  expires    DateTime
+
+  /// Составной первичный ключ: (identifier, token).
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
+
+/**
+ * @model Client
+ * @table clients
+ * @description Клиент агентства. Основная сущность CRM, вокруг которой
+ *              строятся все остальные бизнес-процессы: проекты, счета, лиды.
+ *              Каждый клиент может иметь множество проектов, инвойсов и лидов.
+ */
+model Client {
+  /// Уникальный идентификатор клиента.
+  id            String       @id @default(cuid())
+
+  /// Название (имя) клиента или компании.
+  name          String
+
+  /// Контактный email клиента.
+  email         String?
+
+  /// Контактный телефон клиента.
+  phone         String?
+
+  /// Название компании клиента (юрлицо).
+  company       String?
+
+  /// Веб-сайт клиента.
+  website       String?
+
+  /// Страна клиента (ISO-код: "US", "UK", "DE", "CA" и т.д.).
+  country       String?
+
+  /// Внутренние заметки о клиенте (видны только сотрудникам).
+  notes         String?
+
+  /// Статус клиента: LEAD, ACTIVE, INACTIVE, CHURNED.
+  status        ClientStatus @default(LEAD)
+
+  /// Источник привлечения клиента: REFERRAL, WEBSITE, COLD, OTHER.
+  source        ClientSource @default(OTHER)
+
+  /// Теги для группировки клиентов (например: ["startup", "fintech", "high-priority"]).
+  tags          String[]
+
+  /// Дата создания записи.
+  createdAt     DateTime     @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt     DateTime     @updatedAt
+
+  /// ID ответственного менеджера (User).
+  /// null — клиент ни за кем не закреплён.
+  assignedToId  String?
+
+  // ===== СВЯЗИ =====
+
+  /// Ответственный менеджер (User). Связь через отношение "ClientAssignee".
+  /// При удалении пользователя assignedToId становится null (клиент не удаляется).
+  assignedTo User?    @relation("ClientAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  /// Лиды (сделки), связанные с этим клиентом.
+  leads      Lead[]
+
+  /// Проекты этого клиента.
+  projects   Project[]
+
+  /// Счета, выставленные клиенту.
+  invoices   Invoice[]
+
+  /// Сметы, отправленные клиенту.
+  estimates  Estimate[]
+
+  /// Лог действий по клиенту.
+  activities Activity[]
+
+  /// Токены доступа к клиентскому порталу.
+  portalTokens ClientPortalToken[]
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по статусу — фильтрация активных/неактивных клиентов.
+  @@index([status])
+  /// Индекс по источнику — аналитика каналов привлечения.
+  @@index([source])
+  /// Индекс по ответственному менеджеру — "мои клиенты".
+  @@index([assignedToId])
+  /// Индекс по email — поиск клиента по email.
+  @@index([email])
+  /// Индекс по дате создания — сортировка "новые клиенты".
+  @@index([createdAt])
+  @@map("clients")
+}
+
+/**
+ * @model Lead
+ * @table leads
+ * @description Лид/сделка в воронке продаж. Каждый лид привязан к клиенту
+ *              и проходит через этапы: NEW -> CONTACTED -> PROPOSAL_SENT
+ *              -> NEGOTIATION -> WON/LOST. Содержит финансовую информацию
+ *              (предполагаемая стоимость, вероятность закрытия).
+ */
+model Lead {
+  /// Уникальный идентификатор лида.
+  id                String    @id @default(cuid())
+
+  /// ID клиента, к которому относится лид.
+  clientId          String
+
+  /// Текущий этап воронки продаж.
+  stage             LeadStage @default(NEW)
+
+  /// Предполагаемая стоимость сделки (в USD).
+  value             Decimal   @default(0) @db.Decimal(10, 2)
+
+  /// Вероятность закрытия сделки (0–100%).
+  probability       Int       @default(0)
+
+  /// Ожидаемая дата закрытия сделки.
+  expectedCloseDate DateTime?
+
+  /// Заметки по лиду (пожелания клиента, обсуждаемые условия).
+  notes             String?
+
+  /// Причина проигрыша сделки (заполняется при stage = LOST).
+  lostReason        String?
+
+  /// Внешний ID заявки с лендинга (например, "WEB-2025-0001").
+  externalId        String?   @unique
+
+  /// Источник заявки с лендинга: "landing_quiz", "landing_calculator", "landing_header", "landing_exit".
+  source            String?
+
+  /// Ответы квиза с лендинга (весь объект ответов).
+  quizAnswers       Json?
+
+  /// UTM-метки: utm_source, utm_medium, utm_campaign.
+  utmData           Json?
+
+  /// Информация об устройстве: userAgent, screenResolution, language, timezone.
+  deviceInfo        Json?
+
+  /// Поведенческие данные: timeOnPage, scrollDepth.
+  behaviorData      Json?
+
+  /// Дата создания лида.
+  createdAt         DateTime  @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt         DateTime  @updatedAt
+
+  /// Связь: клиент, к которому относится лид.
+  /// При удалении клиента лид удаляется каскадно.
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по clientId — поиск всех лидов клиента.
+  @@index([clientId])
+  /// Индекс по externalId — поиск заявки с лендинга.
+  @@index([externalId])
+  /// Индекс по этапу — фильтрация "текущие активные сделки".
+  @@index([stage])
+  /// Индекс по вероятности — сортировка "наиболее вероятные сделки".
+  @@index([probability])
+  /// Составной индекс (clientId, stage) — быстрый поиск активных лидов клиента.
+  @@index([clientId, stage])
+  @@map("leads")
+}
+
+/**
+ * @model Project
+ * @table projects
+ * @description Проект — основная рабочая единица. Каждый проект привязан к клиенту
+ *              и содержит задачи, временные записи, счета, файлы и коммуникацию.
+ *              У проекта есть бюджет, потраченная сумма, почасовая ставка.
+ */
+model Project {
+  /// Уникальный идентификатор проекта.
+  id          String        @id @default(cuid())
+
+  /// ID клиента, для которого выполняется проект.
+  clientId    String
+
+  /// Название проекта (например: "Редизайн интернет-магазина").
+  name        String
+
+  /// Описание проекта — цели, стек, объем работ.
+  description String?
+
+  /// Статус проекта: PLANNING, IN_PROGRESS, REVIEW, COMPLETED, ON_HOLD, CANCELLED.
+  status      ProjectStatus @default(PLANNING)
+
+  /// Плановая дата начала проекта.
+  startDate   DateTime?
+
+  /// Плановая дата окончания проекта.
+  endDate     DateTime?
+
+  /// Утверждённый бюджет проекта (в USD).
+  budget      Decimal       @default(0) @db.Decimal(12, 2)
+
+  /// Фактически потраченная сумма (на основе time entries).
+  spent       Decimal       @default(0) @db.Decimal(12, 2)
+
+  /// Почасовая ставка для этого проекта.
+  hourlyRate  Decimal       @default(0) @db.Decimal(10, 2)
+
+  /// ID Project Manager (User), ответственного за проект.
+  pmId        String?
+
+  /// Дата создания проекта.
+  createdAt   DateTime      @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt   DateTime      @updatedAt
+
+  // ===== СВЯЗИ =====
+
+  /// Клиент проекта. При удалении клиента проект удаляется каскадно.
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// Project Manager (пользователь с ролью PM).
+  /// При удалении пользователя pmId становится null.
+  pm        User?   @relation("ProjectManager", fields: [pmId], references: [id], onDelete: SetNull)
+
+  /// Задачи проекта.
+  tasks     Task[]
+
+  /// Счета, выставленные по проекту.
+  invoices  Invoice[]
+
+  /// Сметы по проекту.
+  estimates Estimate[]
+
+  /// Комментарии по проекту.
+  comments  Comment[]
+
+  /// Прикреплённые файлы.
+  files     Attachment[]
+
+  /// Лог действий по проекту.
+  activities   Activity[]
+
+  /// Вехи (milestones) проекта.
+  milestones   Milestone[]
+
+  /// Токены доступа к клиентскому порталу для этого проекта.
+  portalTokens ClientPortalToken[]
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по clientId — все проекты клиента.
+  @@index([clientId])
+  /// Индекс по PM — "мои проекты".
+  @@index([pmId])
+  /// Индекс по статусу — фильтрация активных проектов.
+  @@index([status])
+  /// Составной индекс (clientId, status) — активные проекты клиента.
+  @@index([clientId, status])
+  @@map("projects")
+}
+
+/**
+ * @model Task
+ * @table tasks
+ * @description Задача внутри проекта. Основная единица работы для исполнителей.
+ *              Может иметь родительскую задачу (подзадачи), приоритет, сроки,
+ *              оценку в часах, назначенного исполнителя.
+ */
+model Task {
+  /// Уникальный идентификатор задачи.
+  id             String       @id @default(cuid())
+
+  /// ID проекта, к которому относится задача.
+  projectId      String
+
+  /// ID исполнителя задачи (User). null — задача не назначена.
+  assigneeId     String?
+
+  /// Название задачи (краткое описание работы).
+  title          String
+
+  /// Подробное описание задачи, требования, acceptance criteria.
+  description    String?
+
+  /// Статус выполнения задачи.
+  status         TaskStatus   @default(TODO)
+
+  /// Приоритет задачи.
+  priority       TaskPriority @default(MEDIUM)
+
+  /// Плановая дата начала.
+  startDate      DateTime?
+
+  /// Срок завершения (дедлайн).
+  dueDate        DateTime?
+
+  /// Оценка трудозатрат в часах (estimate).
+  estimatedHours Decimal      @default(0) @db.Decimal(6, 2)
+
+  /// Порядковый номер для сортировки задач (drag-and-drop ordering).
+  position       Int          @default(0)
+
+  /// ID родительской задачи (для подзадач). null — задача верхнего уровня.
+  parentTaskId   String?
+
+  /// Дата и время фактического завершения задачи.
+  completedAt    DateTime?
+
+  /// Дата создания задачи.
+  createdAt      DateTime     @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt      DateTime     @updatedAt
+
+  // ===== СВЯЗИ =====
+
+  /// Проект задачи. При удалении проекта задача удаляется каскадно.
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Исполнитель задачи. При удалении пользователя assigneeId становится null.
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  /// Родительская задача (для подзадач). Само-отношение Task-Task.
+  /// При удалении родительской задачи подзадачи не удаляются (SetNull).
+  parentTask Task?   @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+
+  /// Дочерние задачи (подзадачи). Само-отношение Task-Task.
+  subtasks   Task[]  @relation("TaskSubtasks")
+
+  /// Записи времени по этой задаче.
+  timeEntries TimeEntry[]
+  /// Комментарии к задаче.
+  comments    Comment[]
+  /// Файлы, прикреплённые к задаче.
+  files       Attachment[]
+  /// Лог действий по задаче.
+  activities  Activity[]
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по projectId — все задачи проекта.
+  @@index([projectId])
+  /// Индекс по assigneeId — "мои задачи".
+  @@index([assigneeId])
+  /// Индекс по статусу — фильтрация по статусу.
+  @@index([status])
+  /// Индекс по приоритету — сортировка по важности.
+  @@index([priority])
+  /// Индекс по parentTaskId — поиск подзадач.
+  @@index([parentTaskId])
+  /// Составной индекс (projectId, status) — задачи проекта по статусу.
+  @@index([projectId, status])
+  /// Составной индекс (projectId, assigneeId) — задачи проекта для конкретного исполнителя.
+  @@index([projectId, assigneeId])
+  @@map("tasks")
+}
+
+/**
+ * @model Milestone
+ * @table milestones
+ * @description Веха (milestone) проекта — ключевое событие или этап.
+ *              Используется для планирования и отслеживания прогресса проекта.
+ *              Например: "Завершение спринта 1", "Релиз MVP", "Приёмка заказчиком".
+ */
+model Milestone {
+  /// Уникальный идентификатор вехи.
+  id          String   @id @default(cuid())
+
+  /// ID проекта, к которому относится веха.
+  projectId   String
+
+  /// Название вехи (например: "MVP Ready", "Beta Launch").
+  title       String
+
+  /// Описание вехи — что должно быть сделано к этой дате.
+  description String?
+
+  /// Плановая дата достижения вехи.
+  dueDate     DateTime?
+
+  /// Дата создания.
+  createdAt   DateTime @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt   DateTime @updatedAt
+
+  /// Связь: проект вехи. При удалении проекта веха удаляется каскадно.
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Индекс по projectId — все вехи проекта.
+  @@index([projectId])
+  /// Индекс по дате — сортировка "ближайшие вехи".
+  @@index([dueDate])
+  @@map("milestones")
+}
+
+/**
+ * @model TimeEntry
+ * @table time_entries
+ * @description Запись времени (time tracking). Фиксирует, сколько времени
+ *              потратил конкретный сотрудник на конкретную задачу в определённый день.
+ *              Используется для расчёта стоимости работ и зарплаты.
+ */
+model TimeEntry {
+  /// Уникальный идентификатор записи времени.
+  id          String   @id @default(cuid())
+
+  /// ID задачи, на которую потрачено время.
+  taskId      String
+
+  /// ID пользователя, который ввёл запись.
+  userId      String
+
+  /// Описание выполненной работы.
+  description String?
+
+  /// Количество затраченных часов (с точностью до 2 знаков).
+  hours       Decimal  @default(0) @db.Decimal(6, 2)
+
+  /// Дата, когда была выполнена работа (не дата создания записи).
+  date        DateTime @default(now())
+
+  /// Флаг billable: true — часы оплачиваются клиентом,
+  /// false — внутренние/административные часы (не выставляются).
+  billable    Boolean  @default(true)
+
+  /// Дата создания записи.
+  createdAt   DateTime @default(now())
+
+  /// Связь: задача, на которую списано время.
+  /// При удалении задачи запись времени удаляется каскадно.
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Связь: пользователь, внёсший запись.
+  /// При удалении пользователя его time entry сохраняется (userId остаётся).
+  user User @relation(fields: [userId], references: [id])
+
+  /// Индекс по taskId — все записи времени по задаче.
+  @@index([taskId])
+  /// Индекс по userId — все записи пользователя.
+  @@index([userId])
+  /// Индекс по дате — отчёты за период.
+  @@index([date])
+  /// Составной индекс (userId, date) — дневной таймшит пользователя.
+  @@index([userId, date])
+  @@map("time_entries")
+}
+
+/**
+ * @model Comment
+ * @table comments
+ * @description Комментарий к проекту или задаче. Используется для внутренней
+ *              и внешней коммуникации. Может быть внутренним (visible only to team)
+ *              или видимым клиенту. Поддерживает soft-delete (deletedAt).
+ */
+model Comment {
+  /// Уникальный идентификатор комментария.
+  id         String   @id @default(cuid())
+
+  /// Текст комментария (Markdown поддерживается).
+  content    String
+
+  /// ID автора комментария (User). null — автор удалён.
+  authorId   String?
+
+  /// Имя автора на момент написания (сохраняется даже если пользователь удалён).
+  authorName String?
+
+  /// ID проекта, к которому относится комментарий (может быть null).
+  projectId  String?
+
+  /// ID задачи, к которой относится комментарий (может быть null).
+  taskId     String?
+
+  /// Флаг внутреннего комментария: true — виден только команде,
+  /// false — виден также клиенту через портал.
+  isInternal Boolean  @default(false)
+
+  /// Дата soft-delete (если комментарий удалён). null — комментарий активен.
+  deletedAt  DateTime?
+
+  /// Дата создания.
+  createdAt  DateTime @default(now())
+
+  /// Дата последнего редактирования.
+  updatedAt  DateTime @updatedAt
+
+  // ===== СВЯЗИ =====
+
+  /// Автор комментария. При удалении пользователя комментарий остаётся (authorId=null).
+  author  User?    @relation(fields: [authorId], references: [id])
+
+  /// Проект комментария. При удалении проекта комментарий удаляется каскадно.
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Задача комментария. При удалении задачи комментарий удаляется каскадно.
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Файлы, прикреплённые к комментарию.
+  files   Attachment[]
+
+  /// Индекс по автору — все комментарии пользователя.
+  @@index([authorId])
+  /// Индекс по проекту — все комментарии проекта.
+  @@index([projectId])
+  /// Индекс по задаче — все комментарии задачи.
+  @@index([taskId])
+  /// Индекс по дате — сортировка по свежести.
+  @@index([createdAt])
+  @@map("comments")
+}
+
+/**
+ * @model Invoice
+ * @table invoices
+ * @description Счёт (инвойс), выставленный клиенту. Содержит позиции (lineItems),
+ *              налоги, валюту, статус оплаты. Связан с проектом (опционально)
+ *              и клиентом. На один счёт может быть несколько платежей (частичная оплата).
+ */
+model Invoice {
+  /// Уникальный идентификатор счёта.
+  id        String        @id @default(cuid())
+
+  /// ID клиента, которому выставлен счёт.
+  clientId  String
+
+  /// ID проекта, по которому выставлен счёт (может быть null для общих счетов).
+  projectId String?
+
+  /// Уникальный номер счёта (например: "INV-2026-001").
+  /// Формат: INV-YYYY-NNN, генерируется автоматически.
+  number    String        @unique
+
+  /// Статус счёта: DRAFT, SENT, PAID, OVERDUE, CANCELLED.
+  status    InvoiceStatus @default(DRAFT)
+
+  /// Сумма без налогов (подсумма).
+  subtotal  Decimal       @default(0) @db.Decimal(12, 2)
+
+  /// Сумма налога (например, НДС/VAT 10%).
+  tax       Decimal       @default(0) @db.Decimal(12, 2)
+
+  /// Итоговая сумма: subtotal + tax.
+  total     Decimal       @default(0) @db.Decimal(12, 2)
+
+  /// Уже оплаченная сумма (при частичной оплате).
+  paidAmount Decimal      @default(0) @db.Decimal(12, 2)
+
+  /// Валюта счёта (ISO-код: "USD", "EUR", "GBP").
+  currency  String        @default("USD")
+
+  /// Срок оплаты (дата, до которой счёт должен быть оплачен).
+  dueDate   DateTime?
+
+  /// Дата фактической полной оплаты.
+  paidAt    DateTime?
+
+  /// Примечания к счёту (дополнительная информация для клиента).
+  notes     String?
+
+  /// Условия оплаты (например: "Оплата в течение 30 дней").
+  terms     String?
+
+  /// Позиции счёта (JSON-массив). Каждая позиция содержит:
+  /// {description, quantity, unitPrice, total}
+  lineItems Json          @default("[]")
+
+  /// Дата создания счёта.
+  createdAt DateTime      @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt DateTime      @updatedAt
+
+  // ===== СВЯЗИ =====
+
+  /// Клиент счёта. При удалении клиента счёт удаляется каскадно.
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// Проект счёта (опционально).
+  project  Project?  @relation(fields: [projectId], references: [id])
+
+  /// Платежи по этому счёту (частичные оплаты).
+  payments Payment[]
+
+  // ===== ИНДЕКСЫ =====
+
+  /// Индекс по clientId — все счета клиента.
+  @@index([clientId])
+  /// Индекс по projectId — все счета проекта.
+  @@index([projectId])
+  /// Индекс по статусу — просроченные/неоплаченные счета.
+  @@index([status])
+  /// Индекс по сроку оплаты — сортировка "срочные счета".
+  @@index([dueDate])
+  /// Индекс по номеру — быстрый поиск по номеру счёта.
+  @@index([number])
+  @@map("invoices")
+}
+
+/**
+ * @model Estimate
+ * @table estimates
+ * @description Смета (коммерческое предложение). Отправляется клиенту до начала работ
+ *              для согласования объёма и стоимости. После принятия сметы выставляется счёт.
+ */
+model Estimate {
+  /// Уникальный идентификатор сметы.
+  id         String         @id @default(cuid())
+
+  /// ID клиента, которому отправлена смета.
+  clientId   String
+
+  /// ID проекта (опционально — если смета привязана к существующему проекту).
+  projectId  String?
+
+  /// Статус сметы: DRAFT, SENT, ACCEPTED, DECLINED.
+  status     EstimateStatus @default(DRAFT)
+
+  /// Сумма без налогов.
+  subtotal   Decimal        @default(0) @db.Decimal(12, 2)
+
+  /// Налог.
+  tax        Decimal        @default(0) @db.Decimal(12, 2)
+
+  /// Итоговая сумма: subtotal + tax.
+  total      Decimal        @default(0) @db.Decimal(12, 2)
+
+  /// Валюта сметы.
+  currency   String         @default("USD")
+
+  /// Срок действия сметы (до какой даты действительно предложение).
+  validUntil DateTime?
+
+  /// Примечания и уточнения к смете.
+  notes      String?
+
+  /// Позиции сметы (JSON-массив): [{description, quantity, unitPrice, total}].
+  lineItems  Json           @default("[]")
+
+  /// Дата создания сметы.
+  createdAt  DateTime       @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt  DateTime       @updatedAt
+
+  /// Связь: клиент сметы. При удалении клиента смета удаляется каскадно.
+  client  Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// Связь: проект сметы (опционально).
+  project Project? @relation(fields: [projectId], references: [id])
+
+  /// Индекс по clientId — все сметы клиента.
+  @@index([clientId])
+  /// Индекс по projectId — все сметы проекта.
+  @@index([projectId])
+  /// Индекс по статусу — принятые/отклонённые сметы.
+  @@index([status])
+  @@map("estimates")
+}
+
+/**
+ * @model Payment
+ * @table payments
+ * @description Платеж по счету (инвойсу). Один счёт может иметь несколько платежей
+ *              (частичная оплата). Содержит сумму, дату и способ оплаты.
+ */
+model Payment {
+  /// Уникальный идентификатор платежа.
+  id        String   @id @default(cuid())
+
+  /// ID счёта, по которому совершён платёж.
+  invoiceId String
+
+  /// Сумма платежа.
+  amount    Decimal  @default(0) @db.Decimal(12, 2)
+
+  /// Дата платежа.
+  date      DateTime @default(now())
+
+  /// Способ оплаты: "BANK_TRANSFER", "CREDIT_CARD", "PAYPAL", "CASH", "CRYPTO".
+  method    String   @default("BANK_TRANSFER")
+
+  /// Примечания к платежу (номер транзакции, комментарий).
+  notes     String?
+
+  /// Дата создания записи.
+  createdAt DateTime @default(now())
+
+  /// Связь: счёт платежа. При удалении счёта платежи удаляются каскадно.
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  /// Индекс по invoiceId — все платежи по счёту.
+  @@index([invoiceId])
+  /// Индекс по дате — отчёты по поступлениям.
+  @@index([date])
+  @@map("payments")
+}
+
+/**
+ * @model Attachment
+ * @table attachments
+ * @description Файл, прикреплённый к проекту, задаче или комментарию.
+ *              Хранит метаданные файла (имя, URL, размер, MIME-тип).
+ *              Файлы физически хранятся на UploadThing (utfs.io).
+ */
+model Attachment {
+  /// Уникальный идентификатор вложения.
+  id           String   @id @default(cuid())
+
+  /// Оригинальное имя файла (например: "design-mockup-v3.fig").
+  name         String
+
+  /// URL файла на CDN (UploadThing).
+  url          String
+
+  /// Размер файла в байтах.
+  size         Int      @default(0)
+
+  /// MIME-тип файла (например: "image/png", "application/pdf").
+  mimeType     String?
+
+  /// ID пользователя, загрузившего файл.
+  uploadedById String
+
+  /// ID проекта, к которому прикреплён файл (опционально).
+  projectId    String?
+
+  /// ID задачи, к которой прикреплён файл (опционально).
+  taskId       String?
+
+  /// ID комментария, к которому прикреплён файл (опционально).
+  commentId    String?
+
+  /// Дата загрузки.
+  createdAt    DateTime @default(now())
+
+  // ===== СВЯЗИ =====
+
+  /// Пользователь, загрузивший файл. При удалении пользователя файлы сохраняются
+  /// (связь через отношение "FileUploader").
+  uploadedBy User     @relation("FileUploader", fields: [uploadedById], references: [id])
+
+  /// Проект файла. При удалении проекта файл удаляется каскадно.
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Задача файла. При удалении задачи файл удаляется каскадно.
+  task       Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Комментарий файла. При удалении комментария fileId становится null (SetNull).
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  /// Индекс по загрузившему — "мои файлы".
+  @@index([uploadedById])
+  /// Индекс по проекту — все файлы проекта.
+  @@index([projectId])
+  /// Индекс по задаче — все файлы задачи.
+  @@index([taskId])
+  /// Индекс по комментарию — файлы комментария.
+  @@index([commentId])
+  @@map("attachments")
+}
+
+/**
+ * @model Activity
+ * @table activities
+ * @description Лог действий (аудит-трейл). Автоматически записывает все значимые
+ *              действия пользователей в системе: создание клиента, изменение статуса
+ *              задачи, отправка счёта и т.д. Используется для истории и аналитики.
+ */
+model Activity {
+  /// Уникальный идентификатор записи.
+  id          String   @id @default(cuid())
+
+  /// Тип действия: "CLIENT_CREATED", "LEAD_UPDATED", "PROJECT_STARTED",
+  /// "TASK_COMPLETED", "INVOICE_SENT", "COMMENT_ADDED", "STATUS_CHANGED" и т.д.
+  type        String
+
+  /// Текстовое описание действия (человекочитаемое).
+  description String
+
+  /// ID пользователя, совершившего действие.
+  userId      String
+
+  /// ID связанного клиента (опционально).
+  clientId    String?
+
+  /// ID связанного проекта (опционально).
+  projectId   String?
+
+  /// ID связанной задачи (опционально).
+  taskId      String?
+
+  /// Дополнительные метаданные в JSON (например: {oldStatus, newStatus}).
+  metadata    Json     @default("{}")
+
+  /// Дата и время действия.
+  createdAt   DateTime @default(now())
+
+  // ===== СВЯЗИ =====
+
+  /// Пользователь, совершивший действие.
+  user    User     @relation(fields: [userId], references: [id])
+
+  /// Связанный клиент (опционально). При удалении клиента активности удаляются.
+  client  Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// Связанный проект (опционально). При удалении проекта активности удаляются.
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Связанная задача (опционально). При удалении задачи активности удаляются.
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Индекс по userId — история действий пользователя.
+  @@index([userId])
+  /// Индекс по clientId — история по клиенту.
+  @@index([clientId])
+  /// Индекс по projectId — история по проекту.
+  @@index([projectId])
+  /// Индекс по taskId — история по задаче.
+  @@index([taskId])
+  /// Индекс по дате — сортировка по времени.
+  @@index([createdAt])
+  /// Индекс по типу — фильтрация по типу действий.
+  @@index([type])
+  @@map("activities")
+}
+
+/**
+ * @model Notification
+ * @table notifications
+ * @description Уведомление для пользователя. Отображается в интерфейсе
+ *              (колокольчик уведомлений). Может быть разных типов (INFO, WARNING,
+ *              SUCCESS, ERROR) и содержать ссылку для перехода к контексту.
+ */
+model Notification {
+  /// Уникальный идентификатор уведомления.
+  id        String           @id @default(cuid())
+
+  /// ID пользователя-получателя уведомления.
+  userId    String
+
+  /// Заголовок уведомления (короткий).
+  title     String
+
+  /// Текст уведомления (подробное описание).
+  message   String
+
+  /// Тип уведомления: INFO, WARNING, SUCCESS, ERROR.
+  type      NotificationType @default(INFO)
+
+  /// Флаг прочтения: false — непрочитано, true — прочитано.
+  read      Boolean          @default(false)
+
+  /// Ссылка для перехода (например: "/invoices", "/tasks", "/projects").
+  link      String?
+
+  /// Дата создания уведомления.
+  createdAt DateTime         @default(now())
+
+  /// Связь: пользователь-получатель. При удалении пользователя уведомления удаляются.
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Индекс по userId — уведомления конкретного пользователя.
+  @@index([userId])
+  /// Индекс по статусу прочтения — "непрочитанные уведомления".
+  @@index([read])
+  /// Составной индекс (userId, read) — непрочитанные уведомления пользователя.
+  @@index([userId, read])
+  /// Индекс по дате — сортировка по свежести.
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/**
+ * @model ClientPortalToken
+ * @table client_portal_tokens
+ * @description Токен доступа к клиентскому порталу. Позволяет клиенту
+ *              просматривать статус проекта, задачи и файлы без регистрации
+ *              в основной CRM. Срок действия токена ограничен.
+ */
+model ClientPortalToken {
+  /// Уникальный идентификатор токена.
+  id        String   @id @default(cuid())
+
+  /// ID клиента, которому выдан токен.
+  clientId  String
+
+  /// ID проекта, к которому даётся доступ.
+  projectId String
+
+  /// Уникальный токен доступа (длинная случайная строка).
+  token     String   @unique
+
+  /// Дата истечения — после этой даты доступ по токену невозможен.
+  expiresAt DateTime
+
+  /// Дата создания токена.
+  createdAt DateTime @default(now())
+
+  /// Связь: клиент. При удалении клиента токен удаляется каскадно.
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// Связь: проект. При удалении проекта токен удаляется каскадно.
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Индекс по clientId — все токены клиента.
+  @@index([clientId])
+  /// Индекс по projectId — все токены проекта.
+  @@index([projectId])
+  /// Индекс по токену — быстрый поиск при входе в портал.
+  @@index([token])
+  /// Индекс по дате истечения — фоновое удаление просроченных токенов.
+  @@index([expiresAt])
+  @@map("client_portal_tokens")
+}
+
+/**
+ * @model Webhook
+ * @table webhooks
+ * @description Вебхук (webhook) — автоматический HTTP-вызов при наступлении
+ *              определённых событий в CRM. Используется для интеграции с внешними
+ *              сервисами: Slack, Telegram, Zapier, Make (ex-Integromat).
+ *              При наступлении указанных событий система отправляет POST-запрос
+ *              на указанный URL с payload'ем события.
+ */
+model Webhook {
+  /// Уникальный идентификатор вебхука.
+  id        String   @id @default(cuid())
+
+  /// URL конечной точки, на которую отправляется POST-запрос.
+  url       String
+
+  /// Список событий, при которых срабатывает вебхук.
+  /// Например: ["client.created", "invoice.paid", "task.completed"].
+  events    String[]
+
+  /// Активен ли вебхук. false — вебхук приостановлен, вызовы не производятся.
+  active    Boolean  @default(true)
+
+  /// Секретный ключ для подписи payload'а (HMAC). Используется получателем
+  /// для проверки, что запрос действительно от нашей CRM.
+  secret    String?
+
+  /// Дата и время последнего вызова вебхука.
+  lastCall  DateTime?
+
+  /// HTTP-статус последнего ответа (200, 404, 500 и т.д.).
+  lastStatus Int?
+
+  /// Тело последнего ответа (для отладки и логирования).
+  lastResponse String?
+
+  /// Дата создания вебхука.
+  createdAt DateTime @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt DateTime @updatedAt
+
+  /// Индекс по активности — поиск только активных вебхуков.
+  @@index([active])
+  @@map("webhooks")
+}
+
+/**
+ * @model AutomationRule
+ * @table automation_rules
+ * @description Правило автоматизации — позволяет автоматически выполнять действия
+ *              при наступлении определённых событий и выполнении условий.
+ *              Например: "Когда задача переведена в DONE — отправить уведомление PM".
+ *              Используется для построения no-code/low-code workflow.
+ */
+model AutomationRule {
+  /// Уникальный идентификатор правила.
+  id          String   @id @default(cuid())
+
+  /// Название правила (для отображения в интерфейсе).
+  name        String
+
+  /// Описание — что делает это правило.
+  description String?
+
+  /// Триггер — событие, запускающее правило.
+  /// Например: "task.statusChanged", "invoice.paid", "client.created".
+  trigger     String
+
+  /// Условия срабатывания (JSON). Например:
+  /// { "field": "status", "operator": "equals", "value": "DONE" }
+  conditions  Json     @default("{}")
+
+  /// Действия, выполняемые при срабатывании (JSON). Например:
+  /// { "type": "sendNotification", "userId": "pm", "message": "..." }
+  actions     Json
+
+  /// Активно ли правило. false — правило отключено.
+  active      Boolean  @default(true)
+
+  /// Дата последнего выполнения.
+  lastRunAt   DateTime?
+
+  /// Счётчик: сколько раз правило сработало.
+  runCount    Int      @default(0)
+
+  /// Дата создания.
+  createdAt   DateTime @default(now())
+
+  /// Дата последнего обновления.
+  updatedAt   DateTime @updatedAt
+
+  /// Составной индекс (trigger, active) — быстрый поиск активных правил по событию.
+  @@index([trigger, active])
+  @@map("automation_rules")
+}

@@ -1,0 +1,55 @@
+{
+  "version": "7.8.0",
+  "steps": [
+    {
+      "tag": "CreateEnum",
+      "enum": "Role",
+      "values": ["OWNER", "PM", "DEVELOPER", "DESIGNER", "SALES"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "ClientStatus",
+      "values": ["LEAD", "ACTIVE", "INACTIVE", "CHURNED"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "ClientSource",
+      "values": ["REFERRAL", "WEBSITE", "COLD", "OTHER"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "LeadStage",
+      "values": ["NEW", "CONTACTED", "PROPOSAL_SENT", "NEGOTIATION", "WON", "LOST"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "ProjectStatus",
+      "values": ["PLANNING", "IN_PROGRESS", "REVIEW", "COMPLETED", "ON_HOLD", "CANCELLED"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "TaskStatus",
+      "values": ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "TaskPriority",
+      "values": ["LOW", "MEDIUM", "HIGH", "URGENT"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "InvoiceStatus",
+      "values": ["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "EstimateStatus",
+      "values": ["DRAFT", "SENT", "ACCEPTED", "DECLINED"]
+    },
+    {
+      "tag": "CreateEnum",
+      "enum": "NotificationType",
+      "values": ["INFO", "WARNING", "SUCCESS", "ERROR"]
+    }
+  ]
+}

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebCraft — Разработка сайтов на заказ | Создаём сайты, которые приносят клиентов</title>
+<meta name="description" content="Разработка сайтов под ключ: лендинги, интернет-магазины, корпоративные сайты. Гарантия 14 дней. Более 50 проектов. Получите расчёт стоимости за 2 часа.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS VARIABLES / TOKENS ===== */
+:root {
+  --bg-primary: #0A0F1E;
+  --bg-secondary: #111827;
+  --bg-card: #1E293B;
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-green: #10B981;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #1E293B;
+  --border-light: #334155;
+  --gradient-main: linear-gradient(135deg, #3B82F6, #10B981);
+  --gradient-card: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.05));
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.5);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* ===== TYPOGRAPHY ===== */
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.2}
+.section-label{display:inline-block;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(1.8rem,4vw,3rem);margin-bottom:16px}
+.section-subtitle{color:var(--text-secondary);font-size:1.05rem;max-width:600px;margin-bottom:48px}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 32px;border-radius:var(--radius);font-weight:600;font-size:0.95rem;cursor:pointer;border:none;transition:var(--transition);font-family:var(--font-body);text-decoration:none}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:var(--accent-hover);transform:translateY(-2px);box-shadow:0 8px 32px rgba(59,130,246,0.4)}
+.btn-green{background:var(--accent-green);color:#fff}
+.btn-green:hover{background:#059669;transform:translateY(-2px);box-shadow:0 8px 32px rgba(16,185,129,0.4)}
+.btn-outline{background:transparent;color:var(--text-primary);border:1px solid var(--border-light)}
+.btn-outline:hover{background:var(--bg-card);border-color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid transparent}
+.btn-ghost:hover{color:var(--text-primary)}
+.btn-lg{padding:18px 40px;font-size:1.05rem}
+.btn-sm{padding:10px 20px;font-size:0.85rem}
+.btn-pulse{animation:pulse-btn 5s infinite}
+@keyframes pulse-btn{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)}50%{box-shadow:0 0 0 16px rgba(59,130,246,0)}}
+
+/* ===== HEADER / NAV ===== */
+.header{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:16px 0;transition:var(--transition)}
+.header.scrolled{background:rgba(10,15,30,0.95);backdrop-filter:blur(16px);padding:10px 0;border-bottom:1px solid var(--border)}
+.header .container{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#fff}
+.logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--text-secondary);font-size:0.9rem;font-weight:500;transition:var(--transition);position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition)}
+.nav-links a:hover,.nav-links a.active{color:var(--text-primary)}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.burger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+.burger span{display:block;width:24px;height:2px;background:var(--text-primary);transition:var(--transition);border-radius:2px}
+.burger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.burger.active span:nth-child(2){opacity:0}
+.burger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 0 80px}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;opacity:0.15}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,15,30,0.95),rgba(10,15,30,0.7),rgba(10,15,30,0.95));z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:100px;font-size:0.85rem;color:var(--accent);margin-bottom:24px}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent-green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-size:clamp(2rem,5vw,3.8rem);line-height:1.15;margin-bottom:20px}
+.hero h1 .highlight{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.1rem;color:var(--text-secondary);margin-bottom:32px;max-width:540px;line-height:1.7}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:48px;border-top:1px solid var(--border)}
+.stat-item{text-align:center}
+.stat-number{font-family:var(--font-mono);font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;color:var(--accent)}
+.stat-label{font-size:0.8rem;color:var(--text-muted);margin-top:4px}
+.hero-countdown{display:flex;align-items:center;gap:16px;padding:16px 24px;background:var(--bg-card);border-radius:var(--radius);border:1px solid rgba(59,130,246,0.2);margin-top:32px}
+.hero-countdown .timer{display:flex;gap:8px;font-family:var(--font-mono);font-size:1.1rem}
+.hero-countdown .timer span{color:var(--accent);font-weight:700}
+.hero-countdown .timer-label{font-size:0.8rem;color:var(--text-muted)}
+
+/* ===== SECTIONS COMMON ===== */
+.section{padding:100px 0}
+.section-alt{background:var(--bg-secondary)}
+
+/* ===== SERVICES (ЧТО МЫ СОЗДАЁМ) ===== */
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.service-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 24px;transition:var(--transition);cursor:default}
+.service-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 32px rgba(59,130,246,0.15)}
+.service-card .icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,0.1);border-radius:12px;margin-bottom:16px;font-size:1.4rem}
+.service-card h3{font-size:1.05rem;margin-bottom:8px}
+.service-card p{font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.6}
+.service-card .price-tag{font-family:var(--font-mono);font-size:0.85rem;color:var(--accent);font-weight:600}
+.service-card .case-link{font-size:0.82rem;color:var(--accent-green);display:inline-flex;align-items:center;gap:4px;margin-top:8px}
+.service-card .case-link:hover{color:#059669}
+
+/* ===== PROCESS (ЭТАПЫ) ===== */
+.process-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;position:relative}
+.process-step{text-align:center;padding:24px 16px;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);position:relative;transition:var(--transition)}
+.process-step:hover{border-color:var(--accent)}
+.process-step .num{font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--accent);margin-bottom:8px}
+.process-step h4{font-size:0.95rem;margin-bottom:4px}
+.process-step p{font-size:0.8rem;color:var(--text-muted)}
+.process-step .duration{display:inline-block;margin-top:8px;padding:4px 12px;background:rgba(16,185,129,0.1);border-radius:100px;font-size:0.75rem;color:var(--accent-green);font-weight:600}
+.process-line{display:none}
+
+/* ===== WHY US ===== */
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.why-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 28px;transition:var(--transition)}
+.why-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 32px rgba(59,130,246,0.1)}
+.why-card .num{font-family:var(--font-mono);font-size:2.4rem;font-weight:700;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.why-card h4{font-size:1rem;margin-bottom:8px}
+.why-card p{font-size:0.88rem;color:var(--text-secondary);line-height:1.6}
+.why-card .proof{font-size:0.8rem;color:var(--text-muted);margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* ===== PORTFOLIO ===== */
+.portfolio-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.portfolio-filters button{padding:8px 20px;border-radius:100px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:0.85rem;cursor:pointer;transition:var(--transition);font-family:var(--font-body)}
+.portfolio-filters button.active,.portfolio-filters button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.portfolio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.portfolio-card{border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);border:1px solid var(--border);transition:var(--transition)}
+.portfolio-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 32px rgba(59,130,246,0.15)}
+.portfolio-card .thumb{height:200px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:600;color:var(--text-secondary)}
+.portfolio-card .info{padding:20px}
+.portfolio-card .info .type{font-size:0.75rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.portfolio-card .info h4{font-size:1rem;margin-bottom:4px}
+.portfolio-card .info .meta{font-size:0.8rem;color:var(--text-muted);margin-bottom:8px}
+.portfolio-card .info .result{font-size:0.85rem;color:var(--accent-green);font-weight:600}
+
+/* ===== TARIFFS ===== */
+.tariffs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;align-items:start}
+.tariff-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 28px;transition:var(--transition);position:relative}
+.tariff-card:hover{transform:translateY(-8px);box-shadow:0 16px 48px rgba(59,130,246,0.15)}
+.tariff-card.popular{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 32px rgba(59,130,246,0.2);transform:scale(1.02)}
+.tariff-card.popular:hover{transform:scale(1.02) translateY(-8px)}
+.tariff-card .badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 20px;border-radius:100px;background:var(--gradient-main);font-size:0.75rem;font-weight:700;color:#fff}
+.tariff-card h3{font-size:1.2rem;margin-bottom:4px}
+.tariff-card .desc{font-size:0.85rem;color:var(--text-secondary);margin-bottom:20px}
+.tariff-card .price{font-family:var(--font-mono);font-size:2rem;font-weight:700;margin-bottom:4px}
+.tariff-card .price-sub{font-size:0.8rem;color:var(--text-muted);margin-bottom:20px}
+.tariff-card ul{list-style:none;margin-bottom:24px}
+.tariff-card ul li{padding:8px 0;font-size:0.88rem;color:var(--text-secondary);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.tariff-card ul li:last-child{border-bottom:none}
+.tariff-card ul li .check{color:var(--accent-green);font-weight:700}
+.tariff-card .btn{width:100%}
+
+/* ===== CALCULATOR ===== */
+.calc-wrapper{max-width:720px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;position:relative}
+.calc-progress{height:4px;background:var(--border);border-radius:4px;margin-bottom:32px;overflow:hidden}
+.calc-progress-bar{height:100%;background:var(--gradient-main);border-radius:4px;transition:width 0.5s ease;width:14%}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.calc-field label{display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary)}
+.calc-field label .calc-label-icon{display:inline-block;margin-right:6px}
+.calc-field select,.calc-field input[type="range"]{width:100%;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:var(--font-body);font-size:0.9rem;transition:var(--transition);appearance:none}
+.calc-field select option{background:var(--bg-card);color:var(--text-primary)}
+.calc-field select:focus,.calc-field input[type="range"]:focus{outline:none;border-color:var(--accent)}
+.calc-field input[type="range"]{height:6px;padding:0;accent-color:var(--accent);cursor:pointer}
+.calc-field .range-labels{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-top:4px}
+.calc-checkboxes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.calc-checkboxes label{display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-secondary);cursor:pointer;padding:6px 12px;background:var(--bg-secondary);border-radius:6px;border:1px solid transparent;transition:var(--transition)}
+.calc-checkboxes label:hover{border-color:var(--border-light)}
+.calc-checkboxes input:checked+span{color:var(--text-primary)}
+.calc-checkboxes label:has(input:checked){border-color:var(--accent);background:rgba(59,130,246,0.1)}
+.calc-result-box{margin-top:28px;padding:28px;background:var(--bg-secondary);border-radius:var(--radius);text-align:center;border:1px solid var(--border)}
+.calc-result-box .calc-price{font-family:var(--font-mono);font-size:2rem;font-weight:700;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;transition:all 0.3s}
+.calc-result-box .calc-note{font-size:0.85rem;color:var(--text-muted);margin-top:8px}
+.calc-result-box .btn{margin-top:16px}
+.price-animate{animation:priceSpin 0.4s ease}
+@keyframes priceSpin{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.calc-fullwidth{grid-column:1/-1}
+
+/* ===== REVIEWS ===== */
+.reviews-slider{position:relative;max-width:800px;margin:0 auto;overflow:hidden}
+.reviews-track{display:flex;transition:transform 0.5s ease}
+.review-card{min-width:100%;padding:0 8px}
+.review-card-inner{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 32px}
+.review-card-inner .quote{font-size:1.6rem;color:var(--accent);margin-bottom:8px;font-family:var(--font-mono)}
+.review-card-inner .text{font-size:0.95rem;color:var(--text-secondary);line-height:1.7;margin-bottom:20px;font-style:italic}
+.review-card-inner .author{display:flex;align-items:center;gap:16px}
+.review-card-inner .author .avatar{width:48px;height:48px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;color:#fff}
+.review-card-inner .author .info h4{font-size:0.95rem}
+.review-card-inner .author .info p{font-size:0.8rem;color:var(--text-muted)}
+.review-card-inner .result-badge{display:inline-block;padding:4px 12px;background:rgba(16,185,129,0.1);border-radius:100px;font-size:0.8rem;color:var(--accent-green);font-weight:600;margin-top:12px}
+.reviews-nav{display:flex;justify-content:center;gap:12px;margin-top:24px}
+.reviews-nav button{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;transition:var(--transition);font-size:1.1rem}
+.reviews-nav button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.reviews-dots{display:flex;justify-content:center;gap:8px;margin-top:16px}
+.reviews-dots button{width:8px;height:8px;border-radius:50%;background:var(--border);border:none;cursor:pointer;transition:var(--transition)}
+.reviews-dots button.active{background:var(--accent);width:24px;border-radius:4px}
+
+/* ===== FAQ ===== */
+.faq-list{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:var(--transition)}
+.faq-item.active{border-color:var(--accent)}
+.faq-question{width:100%;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;background:var(--bg-card);border:none;color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;font-weight:500;cursor:pointer;text-align:left;transition:var(--transition)}
+.faq-question:hover{background:var(--bg-secondary)}
+.faq-question .icon{font-size:1.2rem;transition:var(--transition);color:var(--text-muted)}
+.faq-item.active .faq-question .icon{transform:rotate(45deg);color:var(--accent)}
+.faq-answer{padding:0 24px;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s ease;background:var(--bg-secondary)}
+.faq-item.active .faq-answer{max-height:300px;padding:20px 24px}
+.faq-answer p{font-size:0.9rem;color:var(--text-secondary);line-height:1.7}
+
+/* ===== FOOTER ===== */
+.footer{background:var(--bg-secondary);border-top:1px solid var(--border);padding:60px 0 40px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:40px}
+.footer-brand .logo{font-size:1.3rem;margin-bottom:12px;display:block}
+.footer-brand p{font-size:0.85rem;color:var(--text-secondary);max-width:300px;line-height:1.7}
+.footer-socials{display:flex;gap:12px;margin-top:16px}
+.footer-socials a{width:40px;height:40px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:var(--transition);font-size:0.85rem}
+.footer-socials a:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.footer h4{font-size:0.9rem;margin-bottom:16px}
+.footer ul{list-style:none}
+.footer ul li{margin-bottom:10px}
+.footer ul li a{font-size:0.85rem;color:var(--text-muted);transition:var(--transition)}
+.footer ul li a:hover{color:var(--text-primary)}
+.footer-form input,.footer-form textarea{width:100%;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:var(--font-body);font-size:0.85rem;margin-bottom:8px}
+.footer-form input:focus,.footer-form textarea:focus{outline:none;border-color:var(--accent)}
+.footer-form textarea{min-height:80px;resize:vertical}
+.footer-form .btn{width:100%}
+.footer-bottom{margin-top:40px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:var(--text-muted);flex-wrap:wrap;gap:8px}
+
+/* ===== MODALS ===== */
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(10,15,30,0.8);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease}
+.modal-overlay.open{display:flex;opacity:1}
+.modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:600px;width:90%;max-height:90vh;overflow-y:auto;transform:scale(0.9);transition:transform 0.3s ease;padding:36px;position:relative}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.modal-close:hover{background:var(--accent);color:#fff}
+.modal h2{font-size:1.5rem;margin-bottom:8px}
+.modal p.sub{font-size:0.9rem;color:var(--text-secondary);margin-bottom:24px}
+
+/* ===== QUIZ ===== */
+.quiz-step{display:none}
+.quiz-step.active{display:block;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.quiz-progress{display:flex;gap:6px;margin-bottom:24px}
+.quiz-progress .dot{flex:1;height:4px;border-radius:2px;background:var(--border);transition:var(--transition)}
+.quiz-progress .dot.done{background:var(--accent)}
+.quiz-progress .dot.current{background:var(--accent);opacity:0.6}
+.quiz-step h3{font-size:1.2rem;margin-bottom:4px}
+.quiz-step .hint{font-size:0.85rem;color:var(--text-muted);margin-bottom:20px}
+.quiz-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quiz-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:var(--transition);text-align:center;font-size:0.88rem;color:var(--text-secondary);font-family:var(--font-body)}
+.quiz-card:hover{border-color:var(--accent)}
+.quiz-card.selected{border-color:var(--accent);background:rgba(59,130,246,0.1);color:var(--text-primary)}
+.quiz-card .qicon{font-size:1.6rem}
+.quiz-card input{display:none}
+.quiz-btns{display:flex;justify-content:space-between;margin-top:24px}
+.quiz-step input[type="text"],.quiz-step input[type="tel"],.quiz-step input[type="email"],.quiz-step select,.quiz-step textarea{width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:var(--font-body);font-size:0.9rem;margin-bottom:12px}
+.quiz-step input:focus,.quiz-step select:focus,.quiz-step textarea:focus{outline:none;border-color:var(--accent)}
+.quiz-step textarea{min-height:80px;resize:vertical}
+.quiz-checkboxes{display:flex;flex-direction:column;gap:10px}
+.quiz-checkboxes label{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:var(--transition);font-size:0.9rem;color:var(--text-secondary)}
+.quiz-checkboxes label:hover,.quiz-checkboxes label:has(input:checked){border-color:var(--accent);color:var(--text-primary)}
+.quiz-checkboxes input[type="checkbox"]{accent-color:var(--accent);width:16px;height:16px}
+.quiz-agreement{font-size:0.75rem;color:var(--text-muted);margin-top:12px;text-align:center}
+.quiz-thanks{padding:40px 20px;text-align:center}
+.quiz-thanks .check-icon{font-size:3rem;margin-bottom:16px}
+.quiz-thanks h3{font-size:1.5rem;margin-bottom:8px}
+.quiz-thanks .order-id{font-family:var(--font-mono);color:var(--accent);font-size:1rem;margin:8px 0}
+.quiz-thanks .est-price{font-family:var(--font-mono);font-size:1.2rem;color:var(--accent-green);margin:8px 0}
+.quiz-thanks .telegram-share{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 20px;background:#0088cc;color:#fff;border-radius:8px;border:none;cursor:pointer;font-family:var(--font-body);font-size:0.9rem;transition:var(--transition)}
+.quiz-thanks .telegram-share:hover{background:#0077b5}
+
+/* ===== CALLBACK BUTTON ===== */
+.callback-btn{position:fixed;bottom:100px;right:24px;z-index:999;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 4px 24px rgba(59,130,246,0.4);transition:var(--transition)}
+.callback-btn:hover{transform:scale(1.1);box-shadow:0 8px 32px rgba(59,130,246,0.5)}
+.callback-btn .pulse-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent);animation:ring-pulse 2s infinite}
+@keyframes ring-pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(1.4);opacity:0}}
+
+/* ===== STICKY MOBILE CTA ===== */
+.mobile-cta{display:none;position:fixed;bottom:0;left:0;width:100%;z-index:998;background:var(--bg-secondary);border-top:1px solid var(--border);padding:12px 16px}
+.mobile-cta .container{display:flex;gap:12px}
+.mobile-cta .btn{flex:1;padding:12px;font-size:0.9rem}
+@media(max-width:768px){.mobile-cta{display:block}}
+
+/* ===== COOKIE BANNER ===== */
+.cookie-banner{position:fixed;bottom:0;left:0;width:100%;z-index:997;background:var(--bg-card);border-top:1px solid var(--border);padding:16px 24px;display:none;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cookie-banner.show{display:flex}
+.cookie-banner p{font-size:0.82rem;color:var(--text-secondary);max-width:600px}
+.cookie-banner .btns{display:flex;gap:8px}
+
+/* ===== LIVE FEED ===== */
+.live-feed{position:fixed;bottom:100px;left:24px;z-index:99;max-width:280px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:none;animation:slideUp 0.4s ease;box-shadow:var(--shadow)}
+.live-feed.show{display:block}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.live-feed p{font-size:0.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:8px}
+.live-feed .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-green);animation:blink 2s infinite;flex-shrink:0}
+
+/* ===== EXIT INTENT ===== */
+.exit-overlay .modal{max-width:500px;text-align:center}
+.exit-overlay .modal h2{font-size:1.6rem;margin-bottom:12px}
+.exit-overlay .modal .offer-highlight{color:var(--accent);font-weight:700;font-size:1.2rem}
+.exit-overlay .modal input[type="email"]{width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:var(--font-body);font-size:0.9rem;margin:16px 0 12px}
+.exit-overlay .modal input:focus{outline:none;border-color:var(--accent)}
+.exit-overlay .modal .btn{width:100%}
+.exit-overlay .modal .no-thanks{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;margin-top:8px;font-family:var(--font-body)}
+.exit-overlay .modal .no-thanks:hover{color:var(--text-primary)}
+
+/* ===== ACCESSIBILITY: FOCUS TRAP ===== */
+.modal *:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ===== SCROLL REVEAL ===== */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .hero-stats{grid-template-columns:repeat(2,1fr);gap:12px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .calc-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .nav-links{position:fixed;top:0;right:-280px;width:280px;height:100vh;background:var(--bg-secondary);flex-direction:column;padding:80px 24px 24px;transition:right 0.3s ease;z-index:999;border-left:1px solid var(--border)}
+  .nav-links.open{right:0}
+  .burger{display:flex}
+  .hero h1{font-size:clamp(1.6rem,7vw,2.4rem)}
+  .hero-btns{flex-direction:column}
+  .section{padding:60px 0}
+  .services-grid{grid-template-columns:1fr}
+  .process-grid{grid-template-columns:repeat(2,1fr)}
+  .tariffs-grid{grid-template-columns:1fr}
+  .tariff-card.popular{transform:none}
+  .tariff-card.popular:hover{transform:translateY(-4px)}
+  .footer-grid{grid-template-columns:1fr;gap:24px}
+  .quiz-cards{grid-template-columns:1fr}
+  .calc-wrapper{padding:24px}
+  .modal{padding:24px}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .live-feed{display:none!important}
+  .callback-btn{bottom:80px;right:16px;width:48px;height:48px;font-size:1.2rem}
+}
+@media(max-width:480px){
+  .process-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-number{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header" id="header">
+  <div class="container">
+    <a href="#" class="logo">Web<span>Craft</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#process">Процесс</a></li>
+      <li><a href="#portfolio">Портфолио</a></li>
+      <li><a href="#tariffs">Тарифы</a></li>
+      <li><a href="#calculator">Калькулятор</a></li>
+      <li><a href="#reviews">Отзывы</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact" class="btn btn-accent btn-sm" onclick="openModal('callbackModal')">Консультация</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1920&q=80" alt="" loading="lazy">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="reveal">
+        <div class="hero-badge"><span class="dot"></span> Работаем с 2020 года</div>
+        <h1>Ваши конкуренты уже <span class="highlight">получают клиентов из интернета</span></h1>
+        <p>Разрабатываем сайты, которые продают. Средний срок сдачи — 14 дней. Гарантия результата в договоре. Более 50 проектов запущено.</p>
+        <div class="hero-btns">
+          <button class="btn btn-accent btn-lg btn-pulse" onclick="openQuiz()">Получить расчёт стоимости</button>
+          <a href="#portfolio" class="btn btn-outline btn-lg">Смотреть портфолио</a>
+        </div>
+        <div class="hero-countdown reveal">
+          <span style="font-size:0.85rem;color:var(--text-secondary)">🎁 Акция действует ещё:</span>
+          <div class="timer" id="countdownTimer"><span id="cdDays">7</span>д <span id="cdHours">0</span>ч <span id="cdMinutes">0</span>м <span id="cdSeconds">0</span>с</div>
+        </div>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat-item"><div class="stat-number"><span class="counter" data-target="50">0</span>+</div><div class="stat-label">Проектов</div></div>
+        <div class="stat-item"><div class="stat-number"><span class="counter" data-target="4">0</span>+</div><div class="stat-label">Года на рынке</div></div>
+        <div class="stat-item"><div class="stat-number"><span class="counter" data-target="47">0</span></div><div class="stat-label">Довольных клиентов</div></div>
+        <div class="stat-item"><div class="stat-number"><span class="counter" data-target="6">0</span></div><div class="stat-label">Стран</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-label reveal">Что мы создаём</div>
+    <h2 class="section-title reveal">Разрабатываем сайты <br>любой сложности</h2>
+    <p class="section-subtitle reveal">От лендинга до маркетплейса — подберём решение под ваш бизнес и бюджет</p>
+    <div class="services-grid" id="servicesGrid"></div>
+  </div>
+</section>
+
+<!-- ===== PROCESS ===== -->
+<section class="section section-alt" id="process">
+  <div class="container">
+    <div class="section-label reveal">Наш процесс</div>
+    <h2 class="section-title reveal">Как мы работаем</h2>
+    <p class="section-subtitle reveal">Прозрачный процесс с фиксированными сроками и результатами на каждом этапе</p>
+    <div class="process-grid">
+      <div class="process-step reveal"><div class="num">01</div><h4>Брифинг</h4><p>Изучаем бизнес, конкурентов, цели</p><span class="duration">1 день</span></div>
+      <div class="process-step reveal"><div class="num">02</div><h4>Прототип</h4><p>Структура и логика сайта</p><span class="duration">1–2 дня</span></div>
+      <div class="process-step reveal"><div class="num">03</div><h4>Дизайн</h4><p>Уникальный дизайн-концепт</p><span class="duration">2–4 дня</span></div>
+      <div class="process-step reveal"><div class="num">04</div><h4>Вёрстка</h4><p>Чистый адаптивный код</p><span class="duration">3–5 дней</span></div>
+      <div class="process-step reveal"><div class="num">05</div><h4>Тест</h4><p>QA на всех устройствах</p><span class="duration">1–2 дня</span></div>
+      <div class="process-step reveal"><div class="num">06</div><h4>Запуск</h4><p>Размещение на хостинге</p><span class="duration">1 день</span></div>
+      <div class="process-step reveal"><div class="num">07</div><h4>Поддержка</h4><p>Обучение, доработки, хостинг</p><span class="duration">30 дней</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-label reveal">Почему мы</div>
+    <h2 class="section-title reveal">Нас выбирают за результат</h2>
+    <p class="section-subtitle reveal">Цифры и факты, подтверждённые нашими клиентами</p>
+    <div class="why-grid">
+      <div class="why-card reveal"><div class="num">14</div><h4>Средний срок сдачи</h4><p>От брифинга до запуска — не больше 14 дней. Проверено на 47 проектах.</p><div class="proof">✅ 47 клиентов подтверждают</div></div>
+      <div class="why-card reveal"><div class="num">100%</div><h4>Адаптивность</h4><p>Все сайты корректно работают на телефонах, планшетах и desktop. Lighthouse &gt; 90.</p><div class="proof">📱 Тестируем на 12 устройствах</div></div>
+      <div class="why-card reveal"><div class="num">30</div><h4>Бесплатных дней поддержки</h4><p>После запуска обучаем работе с сайтом и вносим правки бесплатно.</p><div class="proof">🛠️ Правки в течение 24 часов</div></div>
+      <div class="why-card reveal"><div class="num">98%</div><h4>Рекомендуют нас</h4><p>47 из 48 клиентов готовы рекомендовать нас коллегам. Работаем по договору с гарантиями.</p><div class="proof">⭐ Рейтинг 4.9 / 5.0</div></div>
+      <div class="why-card reveal"><div class="num">3+</div><h4>Года среднее сотрудничество</h4><p>Большинство клиентов остаются с нами на поддержку после запуска.</p><div class="proof">🤝 Повторные заказы от 60% клиентов</div></div>
+      <div class="why-card reveal"><div class="num">50+</div><h4>Запущенных проектов</h4><p>От сайтов-визиток до сложных порталов. Ни одного брошенного проекта.</p><div class="proof">🚀 С 2020 года на рынке</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PORTFOLIO ===== -->
+<section class="section section-alt" id="portfolio">
+  <div class="container">
+    <div class="section-label reveal">Портфолио</div>
+    <h2 class="section-title reveal">Наши проекты</h2>
+    <p class="section-subtitle reveal">Реальные работы с измеримыми результатами для клиентов</p>
+    <div class="portfolio-filters reveal" id="portfolioFilters"></div>
+    <div class="portfolio-grid" id="portfolioGrid"></div>
+  </div>
+</section>
+
+<!-- ===== TARIFFS ===== -->
+<section class="section" id="tariffs">
+  <div class="container">
+    <div class="section-label reveal">Тарифы</div>
+    <h2 class="section-title reveal">Прозрачные цены на разработку</h2>
+    <p class="section-subtitle reveal">Фиксированная стоимость без скрытых платежей</p>
+    <div class="tariffs-grid">
+      <div class="tariff-card reveal">
+        <h3>Базовый</h3>
+        <p class="desc">Для старта и теста гипотез</p>
+        <div class="price">от 35 000 ₽</div>
+        <p class="price-sub">Сайт-визитка или лендинг</p>
+        <ul>
+          <li><span class="check">✓</span> Уникальный дизайн</li>
+          <li><span class="check">✓</span> Адаптивная вёрстка</li>
+          <li><span class="check">✓</span> До 5 страниц</li>
+          <li><span class="check">✓</span> Форма обратной связи</li>
+          <li><span class="check">✓</span> SEO-база</li>
+          <li><span class="check">✓</span> 30 дней поддержки</li>
+        </ul>
+        <button class="btn btn-outline" onclick="openTariffQuiz('Базовый')">Заказать</button>
+      </div>
+      <div class="tariff-card popular reveal">
+        <div class="badge">Популярный</div>
+        <h3>Стандарт</h3>
+        <p class="desc">Оптимальный для бизнеса</p>
+        <div class="price">от 120 000 ₽</div>
+        <p class="price-sub">Корпоративный сайт или магазин</p>
+        <ul>
+          <li><span class="check">✓</span> Всё из Базового</li>
+          <li><span class="check">✓</span> До 20 страниц</li>
+          <li><span class="check">✓</span> CMS-админка</li>
+          <li><span class="check">✓</span> Оптимизация скорости</li>
+          <li><span class="check">✓</span> Интеграция с CRM</li>
+          <li><span class="check">✓</span> 60 дней поддержки</li>
+        </ul>
+        <button class="btn btn-accent" onclick="openTariffQuiz('Стандарт')">Заказать</button>
+      </div>
+      <div class="tariff-card reveal">
+        <h3>Премиум</h3>
+        <p class="desc">Максимум возможностей</p>
+        <div class="price">от 450 000 ₽</div>
+        <p class="price-sub">Интернет-магазин или портал</p>
+        <ul>
+          <li><span class="check">✓</span> Всё из Стандарта</li>
+          <li><span class="check">✓</span> Любое кол-во страниц</li>
+          <li><span class="check">✓</span> Онлайн-оплата</li>
+          <li><span class="check">✓</span> Личный кабинет</li>
+          <li><span class="check">✓</span> Интеграция с 1С</li>
+          <li><span class="check">✓</span> 12 мес. поддержки</li>
+        </ul>
+        <button class="btn btn-outline" onclick="openTariffQuiz('Премиум')">Заказать</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CALCULATOR ===== -->
+<section class="section section-alt" id="calculator">
+  <div class="container">
+    <div class="section-label reveal">Калькулятор</div>
+    <h2 class="section-title reveal">Рассчитайте стоимость вашего сайта</h2>
+    <p class="section-subtitle reveal">За 1 минуту узнайте примерную цену. Точный расчёт после обсуждения.</p>
+    <div class="calc-wrapper reveal">
+      <div class="calc-progress"><div class="calc-progress-bar" id="calcProgress" style="width:14%"></div></div>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label><span class="calc-label-icon">🌐</span> Тип сайта</label>
+          <select id="calcType" onchange="updateCalc()">
+            <option value="visit|30000|120000" data-label="Сайт-визитка">Сайт-визитка (30 000 – 120 000 ₽)</option>
+            <option value="landing|35000|150000" data-label="Лендинг">Лендинг (35 000 – 150 000 ₽)</option>
+            <option value="corp|100000|350000" data-label="Корпоративный">Корпоративный (100 000 – 350 000 ₽)</option>
+            <option value="shop|450000|1500000" data-label="Интернет-магазин">Интернет-магазин (450 000 – 1 500 000 ₽)</option>
+            <option value="portal|500000|2000000" data-label="Портал">Портал / Маркетплейс (от 500 000 ₽)</option>
+            <option value="catalog|80000|300000" data-label="Каталог">Каталог с фильтрацией (80 000 – 300 000 ₽)</option>
+            <option value="franchise|200000|600000" data-label="Франшиза">Сайт для франшизы (200 000 – 600 000 ₽)</option>
+            <option value="edu|250000|800000" data-label="Образование">Образовательная платформа (250 000 – 800 000 ₽)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label><span class="calc-label-icon">📄</span> Количество страниц</label>
+          <input type="range" id="calcPages" min="1" max="50" value="5" oninput="updateCalc(); document.getElementById('pagesVal').textContent=this.value">
+          <div class="range-labels"><span>1</span><span id="pagesVal">5</span><span>50</span></div>
+        </div>
+        <div class="calc-field">
+          <label><span class="calc-label-icon">🎨</span> Дизайн</label>
+          <select id="calcDesign" onchange="updateCalc()">
+            <option value="1">Стандартный</option>
+            <option value="1.3">Индивидуальный</option>
+            <option value="1.6">Премиум</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label><span class="calc-label-icon">⏱️</span> Срочность</label>
+          <select id="calcUrgency" onchange="updateCalc()">
+            <option value="1">Стандартная</option>
+            <option value="1.3">Ускоренная (+30%)</option>
+            <option value="1.6">Очень срочно (+60%)</option>
+          </select>
+        </div>
+        <div class="calc-field calc-fullwidth">
+          <label><span class="calc-label-icon">⚙️</span> Функционал</label>
+          <div class="calc-checkboxes">
+            <label><input type="checkbox" id="cfForm" onchange="updateCalc()"><span>Форма связи</span></label>
+            <label><input type="checkbox" id="cfPayment" onchange="updateCalc()"><span>Онлайн-оплата</span></label>
+            <label><input type="checkbox" id="cfCabinet" onchange="updateCalc()"><span>Личный кабинет</span></label>
+            <label><input type="checkbox" id="cfCrm" onchange="updateCalc()"><span>CRM-интеграция</span></label>
+            <label><input type="checkbox" id="cfLang" onchange="updateCalc()"><span>Мультиязычность</span></label>
+            <label><input type="checkbox" id="cfSeo" onchange="updateCalc()"><span>SEO-пакет</span></label>
+            <label><input type="checkbox" id="cfSupport3" onchange="updateCalc()"><span>Поддержка 3 мес.</span></label>
+            <label><input type="checkbox" id="cfSupport6" onchange="updateCalc()"><span>Поддержка 6 мес.</span></label>
+            <label><input type="checkbox" id="cfSupport12" onchange="updateCalc()"><span>Поддержка 12 мес.</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="calc-result-box">
+        <div class="calc-price" id="calcPrice">65 000 – 195 000 ₽</div>
+        <div class="calc-note">Предварительная оценка. Точная цена после обсуждения деталей.</div>
+        <button class="btn btn-accent" onclick="openCalcForm()">Получить точное КП</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section class="section" id="reviews">
+  <div class="container">
+    <div class="section-label reveal">Отзывы</div>
+    <h2 class="section-title reveal">Что говорят клиенты</h2>
+    <p class="section-subtitle reveal">Реальные отзывы с цифрами и результатами</p>
+    <div class="reviews-slider reveal">
+      <div class="reviews-track" id="reviewsTrack"></div>
+      <div class="reviews-nav">
+        <button onclick="prevReview()">←</button>
+        <button onclick="nextReview()">→</button>
+      </div>
+      <div class="reviews-dots" id="reviewsDots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="section section-alt" id="faq">
+  <div class="container">
+    <div class="section-label reveal">FAQ</div>
+    <h2 class="section-title reveal">Частые вопросы</h2>
+    <p class="section-subtitle reveal">Отвечаем на главные возражения</p>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<!-- ===== FOOTER / CONTACT ===== -->
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand reveal">
+        <a href="#" class="logo" style="display:inline-block;margin-bottom:12px">Web<span>Craft</span></a>
+        <p>Разрабатываем сайты, которые приносят клиентов. С 2020 года запустили более 50 проектов. Работаем по договору с гарантиями.</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Telegram">📱</a>
+          <a href="#" aria-label="WhatsApp">💬</a>
+          <a href="#" aria-label="VK">📘</a>
+          <a href="#" aria-label="YouTube">▶️</a>
+        </div>
+      </div>
+      <div class="reveal">
+        <h4>Услуги</h4>
+        <ul>
+          <li><a href="#services">Лендинги</a></li>
+          <li><a href="#services">Корпоративные сайты</a></li>
+          <li><a href="#services">Интернет-магазины</a></li>
+          <li><a href="#services">Порталы</a></li>
+          <li><a href="#services">Поддержка</a></li>
+        </ul>
+      </div>
+      <div class="reveal">
+        <h4>Информация</h4>
+        <ul>
+          <li><a href="#portfolio">Портфолио</a></li>
+          <li><a href="#process">Процесс работы</a></li>
+          <li><a href="#tariffs">Цены</a></li>
+          <li><a href="#">Политика конфиденциальности</a></li>
+          <li><a href="#">Договор-оферта</a></li>
+        </ul>
+      </div>
+      <div class="reveal">
+        <h4>Быстрая связь</h4>
+        <form class="footer-form" id="footerForm">
+          <input type="text" name="name" placeholder="Ваше имя" required>
+          <input type="tel" name="phone" placeholder="Телефон" required>
+          <textarea name="message" placeholder="Кратко о задаче..."></textarea>
+          <button type="submit" class="btn btn-accent">Отправить</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 WebCraft. Все права защищены.</span>
+      <span>Сделано с ❤️ для вашего бизнеса</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== MOBILE CTA ===== -->
+<div class="mobile-cta">
+  <div class="container">
+    <button class="btn btn-outline" onclick="openModal('callbackModal')">📞 Перезвоните</button>
+    <button class="btn btn-accent" onclick="openQuiz()">Получить расчёт</button>
+  </div>
+</div>
+
+<!-- ===== CALLBACK BUTTON ===== -->
+<button class="callback-btn" onclick="openModal('callbackModal')" aria-label="Обратный звонок">
+  <span class="pulse-ring"></span>
+  📞
+</button>
+
+<!-- ===== COOKIE BANNER ===== -->
+<div class="cookie-banner" id="cookieBanner">
+  <p>Мы используем cookie для улучшения работы сайта. Продолжая использование, вы соглашаетесь с политикой обработки данных.</p>
+  <div class="btns">
+    <button class="btn btn-sm btn-ghost" onclick="hideCookie()">Настройки</button>
+    <button class="btn btn-sm btn-accent" onclick="acceptCookie()">Принять</button>
+  </div>
+</div>
+
+<!-- ===== LIVE FEED ===== -->
+<div class="live-feed" id="liveFeed">
+  <p><span class="dot"></span> <span id="liveFeedText">Анна из Москвы оставила заявку 2 минуты назад</span></p>
+</div>
+
+<!-- ===== MODAL: CALLBACK ===== -->
+<div class="modal-overlay" id="callbackModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('callbackModal')" aria-label="Закрыть">✕</button>
+    <h2>Обратный звонок</h2>
+    <p class="sub">Оставьте номер — перезвоним за 5 минут в рабочее время</p>
+    <form id="callbackForm">
+      <input type="text" name="name" placeholder="Ваше имя" required>
+      <input type="tel" name="phone" placeholder="Номер телефона" required>
+      <select name="time">
+        <option value="any">Удобное время: любое</option>
+        <option value="10-12">10:00 – 12:00</option>
+        <option value="12-14">12:00 – 14:00</option>
+        <option value="14-16">14:00 – 16:00</option>
+        <option value="16-18">16:00 – 18:00</option>
+        <option value="18-20">18:00 – 20:00</option>
+      </select>
+      <button type="submit" class="btn btn-accent" style="width:100%">Перезвоните мне</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: CALCULATOR FORM ===== -->
+<div class="modal-overlay" id="calcFormModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('calcFormModal')" aria-label="Закрыть">✕</button>
+    <h2>Получить точное КП</h2>
+    <p class="sub">Параметры из калькулятора будут переданы автоматически</p>
+    <form id="calcForm">
+      <input type="text" name="name" placeholder="Ваше имя" required>
+      <input type="tel" name="phone" placeholder="Телефон" required>
+      <input type="email" name="email" placeholder="Email">
+      <textarea name="comment" placeholder="Комментарий (необязательно)"></textarea>
+      <button type="submit" class="btn btn-accent" style="width:100%">Получить КП</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: EXIT INTENT ===== -->
+<div class="modal-overlay exit-overlay" id="exitModal">
+  <div class="modal" style="text-align:center">
+    <button class="modal-close" onclick="closeModal('exitModal')" aria-label="Закрыть">✕</button>
+    <div style="font-size:3rem;margin-bottom:16px">🎁</div>
+    <h2>Подождите!</h2>
+    <p class="sub" style="max-width:400px;margin:0 auto">Получите <span class="offer-highlight">скидку 10%</span> на первый заказ — просто оставьте email</p>
+    <form id="exitForm">
+      <input type="email" name="email" placeholder="Ваш email" required>
+      <button type="submit" class="btn btn-accent" style="width:100%">Получить скидку 10%</button>
+    </form>
+    <button class="no-thanks" onclick="closeModal('exitModal')">Нет, спасибо</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: QUIZ ===== -->
+<div class="modal-overlay" id="quizModal">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-close" onclick="closeModal('quizModal')" aria-label="Закрыть">✕</button>
+    <div class="quiz-progress" id="quizProgress"></div>
+    <div id="quizSteps"></div>
+  </div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const SERVICES = [
+  {icon:'🎯',name:'Лендинги и одностраничники',desc:'Целевая страница для продажи одного товара или услуги. Высокая конверсия.',price:'от 35 000 ₽',color:'#3B82F6'},
+  {icon:'🏢',name:'Корпоративные сайты',desc:'Многостраничный портал (5–30 стр.) для имиджа и информирования клиентов.',price:'от 100 000 ₽',color:'#6366F1'},
+  {icon:'🛒',name:'Интернет-магазины',desc:'WooCommerce или custom-решение с каталогом, корзиной и онлайн-оплатой.',price:'от 450 000 ₽',color:'#10B981'},
+  {icon:'🔍',name:'Каталоги с фильтрацией',desc:'Удобный поиск и фильтрация товаров или услуг по характеристикам.',price:'от 80 000 ₽',color:'#F59E0B'},
+  {icon:'🪪',name:'Сайты-визитки',desc:'3–5 страниц с контактами, портфолио и услугами для частных специалистов.',price:'от 15 000 ₽',color:'#EC4899'},
+  {icon:'🌐',name:'Порталы и маркетплейсы',desc:'Многофункциональные платформы с каталогом поставщиков и покупателей.',price:'от 500 000 ₽',color:'#8B5CF6'},
+  {icon:'📰',name:'Новостные и блог-платформы',desc:'Медиа с редакцией, тегами, подписками и аналитикой.',price:'от 90 000 ₽',color:'#EF4444'},
+  {icon:'🏪',name:'Сайты для франшиз',desc:'Презентация франшизы с заявками, картой партнёров и лендингами для городов.',price:'от 200 000 ₽',color:'#14B8A6'},
+  {icon:'📚',name:'Образовательные платформы (LMS)',desc:'Курсы, уроки, тесты, сертификация и личный кабинет студента.',price:'от 250 000 ₽',color:'#F97316'},
+  {icon:'🏠',name:'Сайты аренды и недвижимости',desc:'Каталог объектов с фильтрацией, 3D-турами и личным кабинетом.',price:'от 150 000 ₽',color:'#06B6D4'},
+  {icon:'📊',name:'Агрегаторы и доски объявлений',desc:'Площадка с объявлениями, категориями и премиум-размещением.',price:'от 300 000 ₽',color:'#A855F7'},
+  {icon:'👤',name:'Личные бренд-сайты',desc:'Персональный сайт эксперта с портфолио, отзывами и блогом.',price:'от 25 000 ₽',color:'#E11D48'}
+];
+
+const PORTFOLIO = [
+  {type:'landing',title:'SmartFit',category:'Лендинг',topic:'Фитнес',period:'10 дней',result:'Заявки выросли на 40%',color:'#3B82F6'},
+  {type:'corp',title:'TechPro Group',category:'Корпоративный',topic:'IT-услуги',period:'14 дней',result:'Трафик +120%',color:'#6366F1'},
+  {type:'shop',title:'EcoMarket',category:'Интернет-магазин',topic:'Экотовары',period:'28 дней',result:'Продажи +65%',color:'#10B981'},
+  {type:'catalog',title:'AutoParts',category:'Каталог',topic:'Автозапчасти',period:'12 дней',result:'Запросов +80%',color:'#F59E0B'},
+  {type:'visit',title:'Dr.Smith',category:'Визитка',topic:'Медицина',period:'5 дней',result:'+15 пациентов/мес',color:'#EC4899'},
+  {type:'portal',title:'MarketHub',category:'Маркетплейс',topic:'Товары',period:'45 дней',result:'500+ продавцов',color:'#8B5CF6'},
+  {type:'blog',title:'TravelDiary',category:'Блог',topic:'Путешествия',period:'8 дней',result:'10k посетителей/мес',color:'#EF4444'},
+  {type:'franchise',title:'PizzaStar',category:'Франшиза',topic:'Фастфуд',period:'21 день',result:'12 партнёров',color:'#14B8A6'},
+  {type:'edu',title:'SkillUp',category:'LMS',topic:'Обучение',period:'30 дней',result:'300 студентов',color:'#F97316'}
+];
+
+const REVIEWS = [
+  {name:'Анна Петрова',company:'EcoMarket',city:'Москва',avatar:'АП',text:'Заказали интернет-магазин. Сделали за 28 дней — это рекорд! Продажи выросли на 65% в первый месяц. Отдельное спасибо за поддержку после запуска.',result:'Продажи +65%'},
+  {name:'Иван Смирнов',company:'TechPro Group',city:'Санкт-Петербург',avatar:'ИС',text:'Искали надёжного подрядчика для корпоративного сайта. Получили не просто сайт, а полноценный инструмент для привлечения клиентов. Трафик вырос на 120%.',result:'Трафик +120%'},
+  {name:'Ольга Кузнецова',company:'PizzaStar',city:'Казань',avatar:'ОК',text:'Сделали сайт для франшизы. Получили 12 заявок от потенциальных партнёров за первый месяц. Очень довольны подходом и скоростью работы.',result:'12 партнёров'},
+  {name:'Дмитрий Новиков',company:'SkillUp',city:'Екатеринбург',avatar:'ДН',text:'Образовательная платформа — сложная задача, но ребята справились отлично. Система работает стабильно, студенты довольны.',result:'300 студентов'},
+  {name:'Елена Морозова',company:'AutoParts',city:'Новосибирск',avatar:'ЕМ',text:'Заказывали каталог с фильтрацией. Сделали быстро и качественно. Количество запросов через сайт выросло на 80%. Рекомендую!',result:'Запросы +80%'}
+];
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+const FAQ = [
+  {q:'Сколько времени занимает разработка сайта?',a:'От брифинга до запуска — от 5 дней (сайт-визитка) до 45 дней (сложный портал). Средний срок — 14 дней. Точные сроки фиксируем в договоре.'},
+  {q:'Сколько стоит разработка сайта?',a:'Стоимость зависит от сложности: лендинг от 35 000 ₽, корпоративный сайт от 100 000 ₽, интернет-магазин от 450 000 ₽. Воспользуйтесь нашим калькулятором для примерной оценки.'},
+  {q:'Что входит в стоимость?',a:'В базовую стоимость входит: анализ конкурентов, прототип, дизайн-концепция, адаптивная вёрстка, базовое SEO, тестирование, размещение на хостинге и 30 дней поддержки.'},
+  {q:'Предоставляете ли вы хостинг?',a:'Да, подбираем хостинг под нагрузку вашего проекта. Первый месяц хостинга — бесплатно. Далее — от 500 ₽/мес.'},
+  {q:'Как происходит оплата?',a:'Работаем по поэтапной оплате: предоплата 50% — начало работы, 30% — после утверждения дизайна, 20% — после запуска. Возможна рассрочка.'},
+  {q:'Даёте ли гарантию?',a:'Да, все работы выполняются по договору. Гарантируем бесперебойную работу сайта после запуска. При обнаружении багов исправляем бесплатно в течение 24 часов.'},
+  {q:'Нужен ли мне технический специалист для обслуживания сайта?',a:'Нет, большинством сайтов можно управлять через удобную админ-панель. Мы также обучаем работе с сайтом после запуска.'},
+  {q:'Делаете ли вы SEO-продвижение?',a:'Да, базовое SEO входит в стоимость каждого сайта. Комплексное SEO-продвижение заказывается отдельно — от 15 000 ₽/мес.'},
+  {q:'Сколько правок входит в проект?',a:'В процессе разработки — неограниченное количество правок до утверждения каждого этапа. После запуска — 30 дней бесплатной поддержки.'},
+  {q:'Работаете ли с физическими лицами?',a:'Работаем как с юридическими, так и с физическими лицами. Заключаем договор и предоставляем все закрывающие документы.'},
+  {q:'Создаёте ли сайты на конструкторах?',a:'Да, для простых проектов используем Tilda или Webflow — от 15 000 ₽. Для сложных проектов — индивидуальная разработка на чистом коде или WordPress.'},
+  {q:'Что такое адаптивная вёрстка?',a:'Это когда сайт корректно отображается на всех устройствах: компьютере, планшете и телефоне. Все наши сайты адаптивные, тестируем на 12 устройствах.'},
+  {q:'Будет ли мой сайт быстро загружаться?',a:'Да, мы оптимизируем скорость загрузки. Наши сайты получают оценку Lighthouse Performance 90+. Это влияет на позиции в поиске и конверсию.'},
+  {q:'Можно ли заказать только дизайн?',a:'Да, мы предоставляем услуги отдельно: дизайн-концепция от 20 000 ₽, вёрстка от 15 000 ₽, прототипирование от 10 000 ₽.'},
+  {q:'Что нужно для начала работы?',a:'Достаточно описать вашу задачу — мы проведём бесплатный брифинг и подготовим коммерческое предложение в течение 2 часов.'}
+];
+
+/* ===== RENDER HELPERS ===== */
+function renderServices(){const g=document.getElementById('servicesGrid');g.innerHTML=SERVICES.map(s=>
+  `<div class="service-card reveal"><div class="icon" style="color:${s.color}">${s.icon}</div><h3>${s.name}</h3><p>${s.desc}</p><div class="price-tag">${s.price}</div><a href="#portfolio" class="case-link">Смотреть кейсы →</a></div>`
+).join('')}
+
+function renderPortfolio(){const f=document.getElementById('portfolioFilters'),g=document.getElementById('portfolioGrid');const t=[...new Set(PORTFOLIO.map(p=>p.category))];f.innerHTML=`<button class="active" data-filter="all">Все</button>${t.map(t=>`<button data-filter="${t}">${t}</button>`).join('')}`;applyFilter('all');f.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{f.querySelector('.active')?.classList.remove('active');b.classList.add('active');applyFilter(b.dataset.filter)}))}
+function applyFilter(filter){const g=document.getElementById('portfolioGrid');const items=filter==='all'?PORTFOLIO:PORTFOLIO.filter(p=>p.category===filter);g.innerHTML=items.map(p=>
+  `<div class="portfolio-card reveal"><div class="thumb" style="background:linear-gradient(135deg,${p.color}22,${p.color}44)"><span style="color:${p.color}">${p.category}</span></div><div class="info"><div class="type">${p.category}</div><h4>${p.title}</h4><div class="meta">${p.topic} · ${p.period}</div><div class="result">📈 ${p.result}</div></div></div>`
+).join('')}
+
+function renderReviews(){const t=document.getElementById('reviewsTrack');t.innerHTML=REVIEWS.map(r=>
+  `<div class="review-card"><div class="review-card-inner"><div class="quote">"</div><div class="text">${r.text}</div><div class="author"><div class="avatar">${r.avatar}</div><div class="info"><h4>${r.name}</h4><p>${r.company} · ${r.city}</p></div></div><div class="result-badge">📈 ${r.result}</div></div></div>`
+).join('');renderDots()}
+let reviewIdx=0;function renderDots(){const d=document.getElementById('reviewsDots');d.innerHTML=REVIEWS.map((_,i)=>`<button class="${i===reviewIdx?'active':''}" onclick="goReview(${i})"></button>`).join('')}
+function goReview(i){reviewIdx=i;document.getElementById('reviewsTrack').style.transform=`translateX(-${reviewIdx*100}%)`;renderDots()}
+function nextReview(){goReview((reviewIdx+1)%REVIEWS.length)}
+function prevReview(){goReview((reviewIdx-1+REVIEWS.length)%REVIEWS.length)}
+
+function renderFAQ(){const f=document.getElementById('faqList');f.innerHTML=FAQ.map((q,i)=>
+  `<div class="faq-item reveal"><button class="faq-question" onclick="toggleFAQ(${i})">${q.q}<span class="icon">+</span></button><div class="faq-answer"><p>${q.a}</p></div></div>`
+).join('')}
+function toggleFAQ(i){const item=document.querySelectorAll('.faq-item')[i];item.classList.toggle('active')}
+
+/* ===== CALCULATOR ===== */
+function updateCalc(){const typ=document.getElementById('calcType').value.split('|');const min=parseInt(typ[1]),max=parseInt(typ[2]);const pages=parseInt(document.getElementById('calcPages').value);const design=parseFloat(document.getElementById('calcDesign').value);const urgency=parseFloat(document.getElementById('calcUrgency').value);const feats=['cfForm','cfPayment','cfCabinet','cfCrm','cfLang','cfSeo','cfSupport3','cfSupport6','cfSupport12'].filter(id=>document.getElementById(id).checked);const featMult=1+feats.length*0.08;let baseMin=min+pages*pages*8;let baseMax=max+pages*pages*15;baseMin*=design*urgency*featMult;baseMax*=design*urgency*featMult;const fMin=Math.round(baseMin),fMax=Math.round(baseMax);const el=document.getElementById('calcPrice');el.textContent=fMin.toLocaleString('ru-RU')+' – '+fMax.toLocaleString('ru-RU')+' ₽';el.classList.remove('price-animate');void el.offsetWidth;el.classList.add('price-animate');const filled=3+feats.length+1;document.getElementById('calcProgress').style.width=Math.min(14+filled*9,100)+'%'}
+
+/* ===== QUIZ ===== */
+const QUIZ_STEPS=[
+  {title:'Для чего вам нужен сайт?',hint:'Выберите основную цель',type:'cards',name:'goal',options:[{icon:'🎯',label:'Привлечь новых клиентов'},{icon:'🛒',label:'Продавать товары онлайн'},{icon:'🏢',label:'Создать имидж компании'},{icon:'🔄',label:'Заменить устаревший сайт'},{icon:'🚀',label:'Начать новый бизнес'},{icon:'✏️',label:'Другое'}]},
+  {title:'Какой тип сайта вам подходит?',hint:'Можно выбрать несколько',type:'cards-multi',name:'type',options:[{icon:'🎯',label:'Лендинг'},{icon:'🏢',label:'Корпоративный'},{icon:'🛒',label:'Интернет-магазин'},{icon:'🪪',label:'Сайт-визитка'},{icon:'🌐',label:'Портал'},{icon:'📰',label:'Блог/Новости'}]},
+  {title:'Ваша сфера деятельности?',hint:'Напишите или выберите',type:'text',name:'niche',placeholder:'Например: фитнес, доставка, IT...'},
+  {title:'Когда нужно запустить сайт?',hint:'Выберите срок',type:'cards',name:'deadline',options:[{icon:'🔥',label:'Как можно скорее (до 2 нед.)'},{icon:'📅',label:'В течение месяца'},{icon:'🗓️',label:'1–3 месяца'},{icon:'💭',label:'Пока планирую'}]},
+  {title:'Ваш ориентировочный бюджет?',hint:'Это поможет подобрать оптимальное решение',type:'cards',name:'budget',options:[{icon:'💰',label:'до $500'},{icon:'💵',label:'$500 — $1500'},{icon:'💎',label:'$1500 — $5000'},{icon:'👑',label:'$5000+'},{icon:'🤔',label:'Не знаю, нужна консультация'}]},
+  {title:'Что важно для вас?',hint:'Выберите дополнительные опции',type:'checkboxes',name:'features',options:['Высокая скорость загрузки','SEO-продвижение','Интеграция с CRM/1С','Онлайн-оплата','Мобильная версия','Обучение работе с сайтом','Дальнейшая поддержка']},
+  {title:'Оставьте контакты',hint:'Остался последний шаг!',type:'contacts',name:'contacts'}
+];
+let quizData={},quizStep=0;
+
+function openQuiz(){quizStep=0;quizData={};document.getElementById('quizModal').classList.add('open');document.body.style.overflow='hidden';renderQuizStep();renderQuizProgress()}
+function renderQuizProgress(){const p=document.getElementById('quizProgress');p.innerHTML=QUIZ_STEPS.map((_,i)=>`<div class="dot ${i<quizStep?'done':''} ${i===quizStep?'current':''}"></div>`).join('')}
+function renderQuizStep(){const step=QUIZ_STEPS[quizStep];const s=document.getElementById('quizSteps');let html=`<div class="quiz-step active"><h3>${step.title}</h3><p class="hint">${step.hint} · Шаг ${quizStep+1} из ${QUIZ_STEPS.length}</p>`;const fi=step.name;if(step.type==='cards'){html+=`<div class="quiz-cards">${step.options.map(o=>`<label class="quiz-card" onclick="selectQuizCard(this,'${fi}','${o.label}')"><div class="qicon">${o.icon}</div><span>${o.label}</span><input type="radio" name="${fi}"></label>`).join('')}</div>`}else if(step.type==='cards-multi'){html+=`<div class="quiz-cards">${step.options.map(o=>`<label class="quiz-card" onclick="this.classList.toggle('selected');const cb=this.querySelector('input');cb.checked=!cb.checked"><div class="qicon">${o.icon}</div><span>${o.label}</span><input type="checkbox" name="${fi}" value="${o.label}"></label>`).join('')}</div>`}else if(step.type==='text'){html+=`<input type="text" name="${fi}" placeholder="${step.placeholder||''}" value="${esc(quizData[fi])||''}">`}else if(step.type==='checkboxes'){html+=`<div class="quiz-checkboxes">${step.options.map(o=>`<label><input type="checkbox" name="${fi}" value="${o}" ${(quizData[fi]||[]).includes(o)?'checked':''}> ${o}</label>`).join('')}</div>`}else if(step.type==='contacts'){html+=`<input type="text" name="name" placeholder="Ваше имя" value="${esc(quizData.name)||''}" required><input type="tel" name="phone" placeholder="Телефон" value="${esc(quizData.phone)||''}" required><input type="email" name="email" placeholder="Email" value="${esc(quizData.email)||''}"><input type="text" name="company" placeholder="Компания (необязательно)" value="${esc(quizData.company)||''}"><textarea name="comment" placeholder="Комментарий (необязательно)">${esc(quizData.comment)||''}</textarea><label class="quiz-agreement"><input type="checkbox" checked> Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности</label>`}html+=`<div class="quiz-btns">${quizStep>0?'<button class="btn btn-ghost" onclick="prevQuizStep()">← Назад</button>':'<span></span>'}${quizStep<QUIZ_STEPS.length-1?'<button class="btn btn-accent" onclick="nextQuizStep()">Далее →</button>':'<button class="btn btn-accent" onclick="submitQuiz()">Отправить 📨</button>'}</div></div>`;s.innerHTML=html}
+function selectQuizCard(el,name,val){const parent=el.closest('.quiz-cards');parent.querySelectorAll('.quiz-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;quizData[name]=val}
+function nextQuizStep(){const step=QUIZ_STEPS[quizStep];const fi=step.name;if(step.type==='cards'){const sel=document.querySelector(`.quiz-step .quiz-card.selected input`);if(!sel){return}quizData[fi]=sel.value}else if(step.type==='cards-multi'){const cbs=document.querySelectorAll(`.quiz-step input[name="${fi}"]:checked`);if(cbs.length===0){return}quizData[fi]=[...cbs].map(c=>c.value)}else if(step.type==='text'){const inp=document.querySelector(`.quiz-step input[name="${fi}"]`);if(!inp.value.trim()){inp.focus();return}quizData[fi]=inp.value.trim()}else if(step.type==='checkboxes'){const cbs=document.querySelectorAll(`.quiz-step input[name="${fi}"]:checked`);quizData[fi]=[...cbs].map(c=>c.value)}else if(step.type==='contacts'){}quizStep++;renderQuizStep();renderQuizProgress()}
+function prevQuizStep(){quizStep--;renderQuizStep();renderQuizProgress()}
+
+function submitQuiz(){const inputs=document.querySelectorAll('.quiz-step input[name], .quiz-step textarea');inputs.forEach(i=>{if(i.name&&i.value)quizData[i.name]=i.value.trim()});if(!quizData.name||!quizData.phone){alert('Заполните имя и телефон');return}
+const orderId=generateOrderId();const appData=collectAppData('quiz',quizData,orderId);sendData(appData);const s=document.getElementById('quizSteps');const estPrice=calculateEstimate(quizData);s.innerHTML=`<div class="quiz-thanks"><div class="check-icon">✅</div><h3>Спасибо, ${esc(quizData.name)}!</h3><p class="order-id">Ваша заявка принята под номером ${esc(orderId)}</p><div class="est-price">Примерная стоимость: ${esc(estPrice)}</div><p style="color:var(--text-secondary);font-size:0.9rem;margin:12px 0">Наш менеджер свяжется с вами в течение 2 часов</p><button class="telegram-share" onclick="shareTelegram('${orderId}','${estPrice}')">📱 Поделиться в Telegram</button><br><button class="btn btn-outline" style="margin-top:12px" onclick="closeModal('quizModal')">Закрыть</button></div>`}
+function calculateEstimate(d){const m={landing:[35000,150000],corp:[100000,350000],shop:[450000,1500000],visit:[15000,120000],portal:[500000,2000000],blog:[90000,300000]};if(Array.isArray(d.type)){const prices=d.type.map(t=>m[t]||[30000,150000]);const min=prices.reduce((a,b)=>a+b[0],0);const max=prices.reduce((a,b)=>a+b[1],0);return Math.round(min/2).toLocaleString('ru-RU')+' – '+Math.round(max/1.5).toLocaleString('ru-RU')+' ₽'}const t=d.type||'landing';const p=m[t]||[30000,150000];return p[0].toLocaleString('ru-RU')+' – '+p[1].toLocaleString('ru-RU')+' ₽'}
+
+/* ===== DATA COLLECTION ===== */
+const pageLoadTime=Date.now();let maxScrollDepth=0;window.addEventListener('scroll',()=>{const h=document.documentElement;maxScrollDepth=Math.max(maxScrollDepth,Math.round((h.scrollTop+h.clientHeight)/h.scrollHeight*100))});
+
+function generateOrderId(){const y=new Date().getFullYear();const c=(parseInt(localStorage.getItem('orderCount')||'0')+1);localStorage.setItem('orderCount',c);return `WEB-${y}-${String(c).padStart(4,'0')}`}
+function getUTMParam(n){const p=new URLSearchParams(window.location.search);return p.get(n)||''}
+
+const CRM_CONFIG={endpoint:'https://heavy-lamps-dream.loca.lt/api/public/leads',token:'landing-secret-token-webcraft-2026-32chars'}
+async function submitToCRM(appData){try{const r=await fetch(CRM_CONFIG.endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${CRM_CONFIG.token}`},body:JSON.stringify(appData)});const result=await r.json();if(!r.ok)throw new Error(result.error||'CRM error');return result}catch(err){const p=JSON.parse(localStorage.getItem('pendingLeads')||'[]');p.push({...appData,failedAt:new Date().toISOString()});localStorage.setItem('pendingLeads',JSON.stringify(p));console.warn('CRM unavailable, saved locally:',err);return{success:true,fallback:true,externalId:appData.externalId}}}
+async function retryPendingLeads(){const p=JSON.parse(localStorage.getItem('pendingLeads')||'[]');if(!p.length)return;const r=[];for(const l of p){try{await submitToCRM(l)}catch{r.push(l)}}localStorage.setItem('pendingLeads',JSON.stringify(r))}
+
+function collectAppData(source,formData,orderId){const now=new Date();return{
+  id:orderId,timestamp:now.toISOString(),source:document.referrer||'direct',utm_source:getUTMParam('utm_source'),utm_medium:getUTMParam('utm_medium'),utm_campaign:getUTMParam('utm_campaign'),pageUrl:window.location.href,userAgent:navigator.userAgent,screenResolution:screen.width+'x'+screen.height,language:navigator.language,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,timeOnPage:Math.round((Date.now()-pageLoadTime)/1000),scrollDepth:maxScrollDepth,formSource:source,contact:{name:formData.name||'',
+  phone:formData.phone||'',email:formData.email||'',company:formData.company||''},project:{goal:formData.goal||'',type:formData.type||'',niche:formData.niche||'',deadline:formData.deadline||'',budget:formData.budget||'',features:formData.features||[],comment:formData.comment||''}}}
+
+async function sendData(appData){const msg=formatTelegram(appData);const TOKEN='8681641603:AAGf1a5C3dxiBiV9jYCkGdl3_bxZep125HI';const CHAT_ID='1385751315';try{await fetch('send.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(appData)})}catch(e){console.log('Email send:',e)}try{await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({chat_id:CHAT_ID,text:msg,parse_mode:'Markdown',disable_web_page_preview:true})})}catch(e){console.log('Telegram send:',e)}showLiveFeed(appData.contact.name||'Клиент');const crmPayload={externalId:appData.id,formSource:appData.formSource,contact:appData.contact,project:appData.project,utmData:{utm_source:appData.utm_source,utm_medium:appData.utm_medium,utm_campaign:appData.utm_campaign,referrer:appData.source,pageUrl:appData.pageUrl},deviceInfo:{userAgent:appData.userAgent,screenResolution:appData.screenResolution,language:appData.language,timezone:appData.timezone},behaviorData:{timeOnPage:appData.timeOnPage,scrollDepth:appData.scrollDepth}};submitToCRM(crmPayload).catch(console.warn)}
+
+function formatTelegram(d){return [
+`🆕 *Новая заявка ${d.id}*`,
+`📅 ${new Date(d.timestamp).toLocaleString('ru-RU')}`,
+``,
+`👤 *Клиент:*`,
+`- Имя: ${d.contact.name}`,
+`- Телефон: ${d.contact.phone}`,
+`- Email: ${d.contact.email||'не указан'}`,
+`- Компания: ${d.contact.company||'не указана'}`,
+``,
+`🎯 *Проект:*`,
+`- Цель: ${d.project.goal||'не указана'}`,
+`- Тип сайта: ${Array.isArray(d.project.type)?d.project.type.join(', '):d.project.type||'не указан'}`,
+`- Сфера: ${d.project.niche||'не указана'}`,
+`- Срок: ${d.project.deadline||'не указан'}`,
+`- Бюджет: ${d.project.budget||'не указан'}`,
+`- Функционал: ${(d.project.features||[]).join(', ')||'не указан'}`,
+``,
+`📊 *Аналитика:*`,
+`- Источник: ${d.source}`,
+`- Время на сайте: ${d.timeOnPage} сек`,
+`- Глубина скролла: ${d.scrollDepth}%`,
+`- Форма: ${d.formSource}`,
+`- UTM: ${d.utm_source||'-'} / ${d.utm_medium||'-'}`
+].join('\n')}
+
+/* ===== MODALS ===== */
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m){m.classList.remove('open');document.body.style.overflow=''}});m.addEventListener('keydown',e=>{if(e.key==='Escape'){m.classList.remove('open');document.body.style.overflow=''}})})
+
+/* ===== FORMS ===== */
+function openCalcForm(){const typ=document.getElementById('calcType');const tOpt=typ.options[typ.selectedIndex];const price=document.getElementById('calcPrice').textContent;document.getElementById('calcFormModal').querySelector('.sub').textContent=`Тип: ${tOpt.textContent} · Цена: ${price}`;openModal('calcFormModal')}
+function openTariffQuiz(tariff){openQuiz();quizData.tariff=tariff}
+
+function handleFormSubmit(formId,source,callback){document.getElementById(formId).addEventListener('submit',function(e){e.preventDefault();const fd=new FormData(this);const data={};fd.forEach((v,k)=>data[k]=v);const orderId=generateOrderId();const appData=collectAppData(source,data,orderId);sendData(appData);if(callback)callback(appData,orderId);this.reset();alert('Спасибо! Заявка принята.');const m=this.closest('.modal-overlay');if(m)closeModal(m.id)})}
+handleFormSubmit('callbackForm','callback');
+handleFormSubmit('calcForm','calculator');
+handleFormSubmit('exitForm','exit_intent');
+handleFormSubmit('footerForm','footer');
+
+/* ===== EXIT INTENT ===== */
+document.addEventListener('mouseleave',function(e){if(e.clientY<0&&!document.getElementById('exitModal').classList.contains('open')&&!localStorage.getItem('exitShown')){localStorage.setItem('exitShown','1');setTimeout(()=>openModal('exitModal'),300)}})
+
+/* ===== COUNTERS ===== */
+function initCounters(){const els=document.querySelectorAll('.counter');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const el=e.target;const target=parseInt(el.dataset.target);animateCounter(el,target);obs.unobserve(el)}})},{threshold:0.5});els.forEach(el=>obs.observe(el))}
+function animateCounter(el,target){let cur=0;const step=Math.ceil(target/30);const timer=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(timer)}el.textContent=cur},40)}
+
+/* ===== SCROLL REVEAL ===== */
+function initReveal(){const els=document.querySelectorAll('.reveal');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});els.forEach(el=>obs.observe(el))}
+
+/* ===== STICKY HEADER ===== */
+window.addEventListener('scroll',()=>{document.getElementById('header').classList.toggle('scrolled',window.scrollY>80)})
+
+/* ===== BURGER ===== */
+document.getElementById('burger').addEventListener('click',function(){this.classList.toggle('active');document.getElementById('navLinks').classList.toggle('open');document.body.style.overflow=document.getElementById('navLinks').classList.contains('open')?'hidden':''})
+document.querySelectorAll('.nav-links a').forEach(a=>{a.addEventListener('click',()=>{document.getElementById('navLinks').classList.remove('open');document.getElementById('burger').classList.remove('active');document.body.style.overflow=''})})
+
+/* ===== NAV ACTIVE LINK ===== */
+function initNavActive(){const sections=document.querySelectorAll('section[id], .hero');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const id=e.target.id||'hero';document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+id)})}})},{threshold:0.3});sections.forEach(s=>obs.observe(s))}
+
+/* ===== COUNTDOWN ===== */
+function initCountdown(){const key='countdownEnd';let end=localStorage.getItem(key);if(!end){const d=new Date();d.setDate(d.getDate()+7);end=d.getTime().toString();localStorage.setItem(key,end)}updateCountdown(parseInt(end));setInterval(()=>updateCountdown(parseInt(end)),1000)}
+function updateCountdown(end){const diff=Math.max(0,end-Date.now());const d=Math.floor(diff/86400000);const h=Math.floor((diff%86400000)/3600000);const m=Math.floor((diff%3600000)/60000);const s=Math.floor((diff%60000)/1000);document.getElementById('cdDays').textContent=d;document.getElementById('cdHours').textContent=h;document.getElementById('cdMinutes').textContent=m;document.getElementById('cdSeconds').textContent=s}
+
+/* ===== COOKIE ===== */
+function acceptCookie(){localStorage.setItem('cookieAccepted','1');document.getElementById('cookieBanner').classList.remove('show')}
+function hideCookie(){localStorage.setItem('cookieAccepted','1');document.getElementById('cookieBanner').classList.remove('show')}
+if(!localStorage.getItem('cookieAccepted')){setTimeout(()=>document.getElementById('cookieBanner').classList.add('show'),1000)}
+
+/* ===== LIVE FEED ===== */
+function showLiveFeed(name){const el=document.getElementById('liveFeed');const txt=document.getElementById('liveFeedText');const cities=['Москвы','Санкт-Петербурга','Казани','Новосибирска','Екатеринбурга','Краснодара','Ростова-на-Дону','Самары','Челябинска','Омска'];const city=cities[Math.floor(Math.random()*cities.length)];txt.textContent=`${name||'Клиент'} из ${city} оставил заявку только что`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),5000)}
+const LIVE_NAMES=[{n:'Анна',c:'Москва'},{n:'Иван',c:'Санкт-Петербург'},{n:'Ольга',c:'Казань'},{n:'Дмитрий',c:'Новосибирск'},{n:'Елена',c:'Екатеринбург'}];let liveIdx=0;
+setInterval(()=>{const l=LIVE_NAMES[liveIdx%LIVE_NAMES.length];const el=document.getElementById('liveFeed');document.getElementById('liveFeedText').textContent=`${l.n} из ${l.c} оставил заявку 2 минуты назад`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),4000);liveIdx++},15000)
+
+/* ===== TELEGRAM SHARE ===== */
+function shareTelegram(orderId,price){const msg=encodeURIComponent(`Я оставил заявку в WebCraft! Номер: ${orderId}, примерная стоимость: ${price}`);window.open(`https://t.me/share/url?url=&text=${msg}`,'_blank')}
+
+/* ===== INIT ===== */
+renderServices();
+renderPortfolio();
+renderReviews();
+renderFAQ();
+initCounters();
+initReveal();
+initNavActive();
+initCountdown();retryPendingLeads();
+</script>
+</body>
+</html>

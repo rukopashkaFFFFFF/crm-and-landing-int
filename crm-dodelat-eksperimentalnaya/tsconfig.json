@@ -1,0 +1,192 @@
+{
+  /**
+   * === НАСТРОЙКИ КОМПИЛЯТОРА TYPESCRIPT ===
+   * Этот файл определяет, как TypeScript трансформирует .ts/.tsx файлы,
+   * какие возможности JS разрешены, и как разрешаются импорты.
+   * 
+   * Next.js использует свой собственный компилятор (SWC) для сборки,
+   * но tsconfig.json всё равно необходим для TypeScript Language Server
+   * (подсказки в IDE, проверка типов, навигация).
+   */
+  "compilerOptions": {
+    /**
+     * Целевая версия JavaScript, в которую компилируется код.
+     * ES2017: поддерживает async/await, Object.values/entries, padStart/End.
+     * Next.js/SWC принимает современный TS и выкидывает полифиллы по необходимости.
+     */
+    "target": "ES2017",
+
+    /**
+     * Библиотеки типов, которые TS подключает для проверки кода.
+     * - "dom" — типы для браузерных API (window, document, fetch и т.д.)
+     * - "dom.iterable" — поддержка итерации по DOM-коллекциям
+     * - "esnext" — все новые возможности JS (Promise.allSettled, Array.flat, etc.)
+     */
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+    /**
+     * Разрешить импорт JS-файлов в TS-коде.
+     * Позволяет использовать .js файлы вместе с .ts, не переписывая их.
+     * Полезно для миграции существующего JS-кода на TypeScript.
+     */
+    "allowJs": true,
+
+    /**
+     * Пропускать проверку типов в файлах из node_modules и определённых .d.ts.
+     * Включает проверку только для вашего кода, экономя время компиляции.
+     * ВАЖНО: НЕ отключает проверку типов — только ускоряет её.
+     */
+    "skipLibCheck": true,
+
+    /**
+     * Строгий режим TypeScript.
+     * Включает сразу: noImplicitAny, strictNullChecks, strictFunctionTypes,
+     * strictBindCallApply, strictPropertyInitialization, noImplicitThis,
+     * alwaysStrict. Обязателен для production-проектов.
+     */
+    "strict": true,
+
+    /**
+     * Не генерировать выходные JS-файлы.
+     * Next.js использует SWC/Babel для компиляции, а TS только для проверки типов.
+     * Если бы noEmit был false, TS создавал бы .js файлы рядом с .ts, что не нужно.
+     */
+    "noEmit": true,
+
+    /**
+     * Включить интероперабельность между CommonJS и ESModule.
+     * Позволяет: import foo from "bar" даже для модулей, экспортирующих через module.exports.
+     * По сути, эмулирует поведение Babel: создаёт default-экспорт из namespace-экспорта.
+     */
+    "esModuleInterop": true,
+
+    /**
+     * Система модулей выходного JS-кода.
+     * "esnext" — использует import/export, без трансформации в CommonJS.
+     * Next.js/SWC обрабатывает модули самостоятельно.
+     */
+    "module": "esnext",
+
+    /**
+     * Стратегия разрешения модулей.
+     * "bundler" — новый режим (TS 5+), который имитирует поведение
+     * современных бандлеров (webpack, Next.js). Разрешает импорты без .js расширений,
+     * поддерживает exports map в package.json.
+     * 
+     * Альтернатива: "node" (классический Node.js) или "node16" (с type: module).
+     * "bundler" — правильный выбор для Next.js.
+     */
+    "moduleResolution": "bundler",
+
+    /**
+     * Разрешить импорт JSON-файлов как модулей.
+     * Позволяет: import data from "./data.json".
+     * Нужно для чтения конфигурационных JSON-файлов.
+     */
+    "resolveJsonModule": true,
+
+    /**
+     * Требовать, чтобы каждый файл обрабатывался как отдельный модуль.
+     * Предотвращает некоторые ошибки, связанные с "global scope" склеиванием.
+     * Требуется для совместимости с Babel/SWC.
+     */
+    "isolatedModules": true,
+
+    /**
+     * Режим JSX для React.
+     * "react-jsx" — новый режим (React 17+), автоматически импортирует
+     * функции jsx()/jsxs() из react/jsx-runtime.
+     * Не требует "import React from 'react'" в каждом файле.
+     * 
+     * Альтернативы: "react" (классический React.createElement),
+     * "react-native" (для RN), "preserve" (оставить JSX как есть).
+     */
+    "jsx": "react-jsx",
+
+    /**
+     * Инкрементальная компиляция.
+     * TS сохраняет информацию о предыдущей компиляции в файлы .tsbuildinfo.
+     * Ускоряет повторную компиляцию при изменениях (дельта-пересборка).
+     */
+    "incremental": true,
+
+    /**
+     * Плагины TypeScript Language Server.
+     * Подключают дополнительную функциональность для IDE.
+     */
+    "plugins": [
+      {
+        /**
+         * Плагин Next.js для TypeScript.
+         * Добавляет поддержку:
+         * - Автоматического разрешения путей из next.config
+         * - Типизации для next/* модулей
+         * - Подсказок для App Router API
+         */
+        "name": "next"
+      }
+    ],
+
+    /**
+     === АЛИАСЫ ПУТЕЙ (Path Aliases) ===
+     * Определяют короткие имена для глубоко вложенных директорий.
+     * Знак @ заменяется на указанный путь при импорте.
+     * 
+     * Пример: import { Button } from "@/components/ui/button"
+     * Реально: import { Button } from "./src/components/ui/button"
+     */
+    "paths": {
+      /**
+       * @alias @/ -> ./src/
+       * Корневой алиас для всего кода приложения.
+       * Все исходники лежат в src/.
+       */
+      "@/*": ["./src/*"],
+
+      /**
+       * @alias @/components/* -> ./src/components/*
+       * Компоненты React: ui-компоненты, layout, страницы.
+       */
+      "@/components/*": ["./src/components/*"],
+
+      /**
+       * @alias @/lib/* -> ./src/lib/*
+       * Утилиты, хелперы, конфигурации, API-клиенты.
+       */
+      "@/lib/*": ["./src/lib/*"],
+
+      /**
+       * @alias @/types/* -> ./src/types/*
+       * TypeScript-типы и интерфейсы, общие для всего проекта.
+       */
+      "@/types/*": ["./src/types/*"],
+
+      /**
+       * @alias @/generated/* -> ./src/generated/*
+       * Автоматически сгенерированный код (Prisma Client, tRPC, GraphQL).
+       * Не редактируется вручную — перегенерируется командами prisma generate.
+       */
+      "@/generated/*": ["./src/generated/*"]
+    }
+  },
+
+  /**
+   * === ВКЛЮЧАЕМЫЕ ФАЙЛЫ (include) ===
+   * Какие файлы TypeScript должен обрабатывать при проверке типов.
+   */
+  "include": [
+    "next-env.d.ts",            // Типы Next.js, генерируются автоматически при next dev
+    "**/*.ts",                  // Все TypeScript-файлы в проекте
+    "**/*.tsx",                  // Все React-файлы с JSX
+    ".next/types/**/*.ts",       // Сгенерированные Next.js типы (production)
+    ".next/dev/types/**/*.ts",   // Сгенерированные Next.js типы (dev-режим)
+    "**/*.mts"                   // TypeScript-модули с расширением .mts
+  ],
+
+  /**
+   * === ИСКЛЮЧАЕМЫЕ ФАЙЛЫ (exclude) ===
+   * Какие файлы НЕ нужно проверять TypeScript.
+   * node_modules исключается всегда — это стандарт безопасности.
+   */
+  "exclude": ["node_modules"]
+}
